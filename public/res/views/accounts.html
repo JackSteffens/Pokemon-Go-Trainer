@@ -1,0 +1,37 @@
+<md-content>
+  <md-toolbar class="md-tall md-header-tall">
+    <div class="md-toolbar-tools">
+      <p class="md-display-3">My accounts</p>
+    </div>
+  </md-toolbar>
+
+  <md-content layout-padding>
+    <md-grid-list
+        md-cols-xs="2" md-cols-sm="3" md-cols-md="4" md-cols-gt-md="6"
+        md-row-height-gt-md="1:1" md-row-height="2:2"
+        md-gutter="12px" md-gutter-gt-sm="8px" >
+
+      <md-grid-tile class="account-profile-card"
+                    ng-repeat="i in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]"
+                    md-whiteframe="2">
+
+        <md-content md-theme="mysticBackground" class="grid-tile-container md-hue-2">
+          <div class="account-profile-card-image"></div>
+        </md-content>
+
+        <md-grid-tile-footer>
+          <!-- Exp -->
+          <md-progress-linear md-mode="determinate" class="md-accent" value="{{100/i}}"></md-progress-linear>
+          <md-tooltip md-direction="top">
+            {{100/i*100 | number:0}} / {{10000 | number:0}} XP
+          </md-tooltip>
+
+          <!-- Info -->
+          <h3>name : {{i}}</h3>
+          <h3>level : {{i}}</h3>
+        </md-grid-tile-footer>
+      </md-grid-tile>
+
+    </md-grid-list>
+  </md-content>
+</md-content>

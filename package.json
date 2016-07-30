@@ -1,0 +1,37 @@
+{
+  "name": "pokemon-go-bot-node",
+  "version": "1.0.0",
+  "description": "Pokemon Go bot written in NodeJS",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Hypnoised",
+  "license": "ISC",
+  "dependencies": {
+    "angular": "^1.5.7",
+    "angular-animate": "^1.5.7",
+    "angular-aria": "^1.5.7",
+    "angular-material": "^1.0.9",
+    "angular-messages": "^1.5.7",
+    "angular-nvd3": "^1.0.8",
+    "angular-ui-router": "^0.3.1",
+    "body-parser": "^1.15.2",
+    "events": "^1.1.1",
+    "express": "^4.14.0",
+    "geocoder": "^0.2.2",
+    "gpsoauthnode": "^0.0.5",
+    "grunt": "^1.0.1",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "jquery": "^3.1.0",
+    "mongoose": "^4.5.5",
+    "morgan": "^1.7.0",
+    "ngmap": "^1.17.1",
+    "oclazyload": "^1.0.9",
+    "protobufjs": "^5.0.1",
+    "request": "^2.73.0",
+    "websocket": "^1.0.23"
+  }
+}

@@ -1,0 +1,7 @@
+<div layout-margin class="menu-button" ng-class="[currentUI == 'map' && !isOpen ? 'menu-button-map' : '']">
+  <md-button class="md-icon-button md-primary"
+              ng-class="isOpen || currentUI != 'map' ? ['md-flat', 'md-icon-white'] : 'md-raised'"
+              ng-click="toggleSidenav()">
+    <md-icon class="material-icons">{{icon}}</md-icon>
+  </md-button>
+</div>

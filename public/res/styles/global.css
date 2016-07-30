@@ -1,0 +1,144 @@
+body {
+  overflow: hidden;
+}
+
+.map-container {
+  display: flex;
+  flex-flow: column;
+  height: 100vh;
+}
+
+.map-options-container {
+  position: absolute;
+  bottom: 1em;
+  z-index: 50;
+  left:200px;
+  width:calc(100vw - 400px);
+  margin: 0 auto;
+  background-color: rgba(0,0,0,0)!important;
+}
+
+.info-window-arena {
+  height: 70px;
+  padding-bottom:1em;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+}
+
+.map-options-container>div {
+  width: auto;
+}
+
+.map {
+  flex: 1;
+}
+
+/*Force view to be 100% window height*/
+.view {
+  height:100vh;
+  overflow-y: auto;
+}
+
+/*Page headers*/
+.md-header-tall {
+  padding: 2em;
+  overflow: hidden;
+}
+
+.md-header-tall>div {
+  bottom:0;
+  padding-left:2em;
+}
+
+/*Force sidenav on left side with full height*/
+sidenav {
+  float:left;
+  height: 100%;
+}
+
+sidenav md-sidenav {
+  height: 100%;
+  max-width: none;
+}
+
+/*Sidenav selection highlight*/
+md-menu-item>a.selected {
+  background-color: rgba(158,158,158,0.2);
+}
+
+md-menu-item>a>span {
+    text-transform: capitalize;
+}
+
+/*Force icon button to be white of color*/
+.md-icon-white>md-icon {
+  color: rgba(255,255,255,0.87)!important;
+}
+
+/*Sidenav toggle button*/
+.menu-button {
+  float: left;
+  position: absolute;
+  left: 0;
+  top: 4px;
+  -webkit-transition: left .5s; /* Safari */
+  z-index: 100;
+}
+
+.menu-button-map {
+  left: 6em;
+}
+
+@media screen and (max-width:960px) {
+  .menu-button {
+    top: -3px;
+  }
+}
+
+@media screen and (max-width:780px) {
+  .menu-button {
+    top: 0;
+  }
+}
+
+.account-profile-card {
+  border-radius: 2px;
+}
+
+.account-profile-card-nav {
+}
+
+.grid-tile-container {
+  width: 100%;
+  height: 100%;
+}
+
+.text-white {
+  color: white;
+}
+
+.account-profile-card-image{
+  background-image: url('/res/images/character.png');
+  background-size: cover;
+  background-position: top right;
+  background-repeat: no-repeat;
+  margin-left:3em;
+  height: 100%;
+  width: 75%;
+}
+
+.account-profile-card>figure>md-grid-tile-footer {
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+
+.account-profile-card>figure>md-grid-tile-footer>figcaption,
+.account-profile-card-nav>figure>md-grid-tile-footer>figcaption {
+  width: 100%;
+  height: 100%;
+}
+
+.md-tabs-light>md-tabs-wrapper>md-next-button>md-icon, .md-tabs-light>md-tabs-wrapper>md-prev-button>md-icon {
+    color:white;
+}

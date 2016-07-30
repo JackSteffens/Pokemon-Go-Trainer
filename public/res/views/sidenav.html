@@ -1,0 +1,81 @@
+<md-sidenav class="md-sidenav-left"
+            md-component-id="left"
+            md-whiteframe="3">
+  <md-toolbar>
+    <div class="md-toolbar-tools" layout="column" layout-align="center center">
+      <span>Pokémon Go Bot</span>
+    </div>
+  </md-toolbar>
+
+<md-tabs class="md-primary md-hue-1 md-tabs-light" md-dynamic-height md-selected="selectedCharacterIndex">
+  <md-tab label="{{name}}" ng-repeat="name in names">
+    <md-content class="sidenav-user">
+      <md-grid-list md-cols="1" md-row-height="1:1">
+        <md-grid-tile class="account-profile-card-nav">
+          <!-- Image -->
+          <md-content md-theme="mysticBackground" class="grid-tile-container md-hue-2">
+            <div class="account-profile-card-image" layout="column" layout-align="start end">
+              <md-button md-theme="mystic" class="md-icon-button md-raised" style="top:1em; float:right; right:-1.5em;">
+                <md-icon class="material-icons">
+                  exit_to_app
+                </md-icon>
+                <md-tooltip md-direction="bottom">
+                  Log out
+                </md-tooltip>
+              </md-button>
+              <span style="height:55%;">&nbsp;</span>
+            </div>
+          </md-content>
+          <!-- Footer -->
+          <md-grid-tile-footer>
+            <!-- Exp -->
+            <md-progress-linear md-mode="determinate" class="md-accent" value="{{24627/75000*100}}"></md-progress-linear>
+
+            <!-- Info -->
+            <div layout="row" style="padding-top:.25em; padding-right:16px;">
+              <h3 class="md-headline">{{name}}</h3>
+              <span flex></span>
+              <h3 class="md-headline">
+                21
+                <md-tooltip md-direction="top">
+                  {{21496 | number:0}} / {{75000 | number:0}} XP
+                </md-tooltip>
+              </h3>
+            </div>
+          </md-grid-tile-footer>
+        </md-grid-tile>
+
+      </md-grid-list>
+
+    </md-content>
+  </md-tab>
+</md-tabs>
+
+  <md-content>
+    <md-menu-content style="padding-top:0;">
+      <!-- Character specific pages -->
+      <!-- Only show when 1 or more accounts are registered -->
+      <div>
+        <md-menu-item>
+          <md-button ui-sref="character({user: names[selectedCharacterIndex]})" ng-click="closeSidenav()" ui-sref-active="selected">
+            <md-icon class="material-icons">folder_shared</md-icon>
+            <span>Character Overview</span>
+          </md-button>
+        </md-menu-item>
+        <md-menu-divider></md-menu-divider>
+      </div>
+
+      <!-- General pages -->
+      <div ng-repeat="page in pages track by $index">
+        <md-menu-item>
+          <md-button ui-sref="{{routes[$index]}}" ng-click="closeSidenav()" ui-sref-active="selected">
+            <md-icon class="material-icons">{{icons[$index]}}</md-icon>
+            <span>{{page}}</span>
+          </md-button>
+        </md-menu-item>
+        <md-menu-divider></md-menu-divider>
+      </div>
+
+    </md-menu-content>
+  </md-content>
+</md-sidenav>

@@ -1,0 +1,79 @@
+<md-content class="map-container">
+      <ng-map center="52.3582993, 4.7819455" zoom="15"
+              id="map" class="map"
+              style="width: 100%; background-color:grey;">
+        <!-- Player location -->
+        <marker position="[{{character.lat}}, {{character.lng}}]" icon="{{characterIcon}}"></marker>
+        <!-- Pokemon locations -->
+        <marker ng-repeat="(key, poke) in pokemon"
+                position="[{{poke.lat}}, {{poke.lng}}]"
+                title="{{poke.name}}"
+                icon="{{markerIcons[poke.id]}}"
+                on-click="displayPokemonInfo(event, poke);"
+                ng-if="markerEnabled.pokemon"></marker>
+
+        <info-window id="info-window-pokemon" max-width="200">
+          <div ng-non-bindable="">
+            <h1 class="md-subhead">{{pokemonDetails.name}}</h1>
+            <div style="width:150px;">
+              <div class="info-window-arena" ng-style="{'background-image': 'url(/res/images/arenas/arena_2.png)'}"
+                    layout="row" layout-align="center center">
+                <img ng-src="/res/images/pokemons_icon/{{pokemonDetails.id}}.png"></img>
+              </div>
+              <p>
+                Time left : {{pokemonDetails.disappear_time | countdownFilter}}
+              </p>
+            </div>
+          </div>
+        </info-window>
+
+        <!-- Gym locations -->
+        <marker ng-repeat="gym in gyms"
+                position="[{{gym[1]}}, {{gym[2]}}]"
+                ng-if="markerEnabled.gym"
+                title="team : {{gym[0]}} | lvl : {{gym[3]}}"></marker>
+        <directions draggable="false"
+                    panel="directions-panel"
+                    travel-mode="bicycling"
+                    origin="place_id:Ei5adWlkZXJtb2xlbndlZyAxLCAxMDY5IENFIEFtc3RlcmRhbSwgTmVkZXJsYW5k"
+                    destination="place_id:ChIJJ3GX-uHjxUcRXETYtgPmNnk">
+        </directions>
+      </ng-map>
+
+      <md-content class="map-options-container" style="padding-right:1em;" layout="row" layout-align="center center" ng-if="true">
+        <div layout="row" layout-align="center center">
+          <md-button class="md-icon-button md-raised" ng-click="getNearbyData()">
+            <md-icon class="material-icons">
+              refresh
+            </md-icon>
+          </md-button>
+
+          <!-- Marker filter -->
+          <md-menu md-offset="-10 0">
+              <md-button class="md-icon-button md-raised" ng-click="$mdOpenMenu($event)">
+                <md-icon md-menu-origin class="material-icons">
+                  sort
+                </md-icon>
+              </md-button>
+
+              <md-menu-content width="4">
+                <md-menu-item>
+                  <md-checkbox style="margin-left: 1em;" ng-model="markerEnabled.gym">
+                    Gyms
+                  </md-checkbox>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-checkbox style="margin-left: 1em;" ng-model="markerEnabled.pokemon">
+                    Pokemon
+                  </md-checkbox>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-checkbox style="margin-left: 1em;" ng-model="markerEnabled.pokestops">
+                    Pokestops
+                  </md-checkbox>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+          </div>
+      </md-content>
+</md-content>
