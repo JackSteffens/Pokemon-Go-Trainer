@@ -38,9 +38,9 @@ function api_req(trainerObj, req, callback) {
     status_code: 2,
     request_id: 1469378659230941192,
     requests: req,
-    latitude: trainerObj.latitude,
-    longitude: trainerObj.longitude,
-    altitude: trainerObj.altitude,
+    latitude: parseFloat(trainerObj.latitude),
+    longitude: parseFloat(trainerObj.longitude),
+    altitude: parseFloat(trainerObj.altitude),
     auth_info: auth,
     unknown12: 989
   });
@@ -106,11 +106,15 @@ module.exports = {
       }
 
       try {
+        // TODO This fucks up after logging in for a second time.
         data = JSON.parse(body);
       }catch(err){
         console.log('[#] '+err);
-        return callback(err, null);
+        if (!data) {
+          return callback(err, null);
+        }
       }
+
 
       console.log('[!] First request successful.');
       // console.log('[i] Data : ');
@@ -221,9 +225,6 @@ module.exports = {
         return callback(error);
       }
 
-      console.log('API ENDPOINT RESPONSE')
-      console.log(response);
-
       if (response.api_url) {
         var api_endpoint = "https://" + response.api_url + "/rpc";
         trainerObj.apiEndpoint = api_endpoint;
@@ -238,8 +239,6 @@ module.exports = {
 
   getTrainerData: function(trainerObj, callback) {
     var req = new RequestNetwork.Request(2);
-    console.log("REQUEST NETWORK DATA")
-      console.log(req);
     api_req(trainerObj, req, function(error, response) {
       if (error) {
         return callback(error);
@@ -254,4 +253,33 @@ module.exports = {
     })
   },
   // End getTrainerData() function
+
+  getTrainerInventory: function(trainerObj, callback) {
+    var req = new RequestNetwork.Request(4);
+      // console.log(req);
+
+    api_req(trainerObj, req, function(error, response) {
+      if (error) {
+        return callback(error);
+      } else if (!response || !response.returns || !response.returns[0]) {
+        console.log(response)
+        return callback('[!] No results');
+      }
+
+      var data = ResponseNetwork.GetInventoryResponse.decode(response.returns[0]);
+
+          var inventoryObj = {
+            stats: data.inventory_delta.inventory_items[1].inventory_item_data.player_stats,
+            candies: data.inventory_delta.inventory_items[2].inventory_item_data.candy,
+            incubators: data.inventory_delta.inventory_items[3].inventory_item_data.egg_incubator,
+            pokedex: data.inventory_delta.inventory_items[4].inventory_item_data.pokedex_entry,
+            items1: data.inventory_delta.inventory_items[5].inventory_item_data.item,
+            items2: data.inventory_delta.inventory_items[6].inventory_item_data.item,
+            pokemon: data.inventory_delta.inventory_items[7].inventory_item_data.pokemon_data
+          }
+      console.log(inventoryObj);
+      return callback(null, inventoryObj);
+    });
+  },
+  // End getTrainerProfile() function
 }

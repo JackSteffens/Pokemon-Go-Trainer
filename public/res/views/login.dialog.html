@@ -1,0 +1,67 @@
+<md-dialog class="md-modal-container">
+  <form>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        Login
+      </div>
+    </md-toolbar>
+
+    <md-dialog-content>
+      <md-content layout-padding>
+        <div layout="row" layout-align="space-around center">
+          <md-input-container flex="45" style="width:100%" class="md-input-has-value">
+            <label>Username</label>
+            <input name="username"
+                   placeholer=""
+                   ng-model="authObj.username">
+          </md-input-container>
+          <span flex="10">&nbsp;</span>
+          <md-input-container flex="45" style="width:100%" md-no-float>
+            <label>Password</label>
+            <input name="password"
+                   placeholer=""
+                   ng-model="authObj.password"
+                   type="password">
+          </md-input-container>
+        </div>
+
+        <div layout="row" layout-align="space-between center">
+          <md-input-container style="width:100%; margin-bottom:0;" flex="30">
+            <label>Latitude</label>
+            <input placeholder="" type="number" step="0.0001" name="latitude" ng-model="authObj.latitude">
+          </md-input-container>
+
+          <md-input-container style="width:100%; margin-bottom:0;" flex="30">
+            <label>Longitude</label>
+            <input placeholder="" type="number" step="0.0001" name="longitude" ng-model="authObj.longitude">
+          </md-input-container>
+
+          <md-input-container style="width:100%; margin-bottom:0;" flex="30">
+            <label>Altitude</label>
+            <input placeholder="" type="number" step="0.0001" name="altitude" ng-model="authObj.altitude">
+          </md-input-container>
+        </div>
+
+      </md-content>
+
+      <div>
+        <ng-map center="{{authObj.latitude}}, {{authObj.longitude}}"
+                zoom="15"
+                style="width:100%; height: 250px;"
+                disable-default-u-i="true">
+                <marker position="[{{authObj.latitude}}, {{authObj.longitude}}]">
+                </marker>
+        </ng-map>
+      </div>
+    </md-dialog-content>
+
+    <md-dialog-actions>
+      <md-button class="md-primary md-flat" ng-click="cancelLogin()" ng-disabled="loginDisabled">
+        Cancel
+      </md-button>
+      <md-button class="md-primary md-raised" ng-disabled="loginDisabled" ng-click="login()">
+        Login
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

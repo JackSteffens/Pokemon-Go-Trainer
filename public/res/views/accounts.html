@@ -12,11 +12,19 @@
         md-gutter="12px" md-gutter-gt-sm="8px" >
 
       <md-grid-tile class="account-profile-card"
-                    ng-repeat="i in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]"
+                    ng-repeat="account in accounts"
                     md-whiteframe="2">
 
         <md-content md-theme="mysticBackground" class="grid-tile-container md-hue-2">
-          <div class="account-profile-card-image"></div>
+          <div class="account-profile-card-image" layout="column" layout-align="start end">
+            <md-button md-theme="mystic" class="md-icon-button md-raised" ng-click="loginPopup($event, account)" style="top:1em; float:right; right:-.5em;">
+              <md-icon class="material-icons">
+                play_arrow
+              </md-icon>
+              <md-tooltip md-direction="bottom">
+                Log in
+              </md-tooltip>
+            </md-button></div>
         </md-content>
 
         <md-grid-tile-footer>
@@ -27,8 +35,36 @@
           </md-tooltip>
 
           <!-- Info -->
-          <h3>name : {{i}}</h3>
-          <h3>level : {{i}}</h3>
+          <h3>name : {{account.username}}</h3>
+          <h3>level : {{account.level}}</h3>
+        </md-grid-tile-footer>
+      </md-grid-tile>
+
+      <md-grid-tile class="account-profile-card"
+                    md-whiteframe="2"
+                    ng-click="loginPopup($event, null)"
+                    md-ink-ripple
+                    style="cursor:pointer">
+        <md-content md-theme="mysticBackground"
+                    class="grid-tile-container md-hue-2"
+                    layout="column"
+                    layout-align="center center">
+        <md-button md-theme="mystic" class="md-icon-button md-raised">
+          <md-icon class="material-icons">
+            add
+          </md-icon>
+          <md-tooltip>
+            Add a trainer
+          </md-tooltip>
+        </md-button>
+        </md-content>
+
+        <md-grid-tile-footer>
+          <!-- Exp -->
+          <md-progress-linear md-mode="determinate" class="md-accent" value="0"></md-progress-linear>
+
+          <!-- Info -->
+          <h3 class="md-subhead" flex="100" style="text-align: center; margin:0; margin-top:.5em;">Add new</h3>
         </md-grid-tile-footer>
       </md-grid-tile>
 

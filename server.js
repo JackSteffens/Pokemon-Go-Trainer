@@ -26,48 +26,10 @@ app.use(bodyParser.json({type : 'application/vnd.api+json'}));
 // Models
 var Pokemon = require(__dirname+'/models/js/pokemon.model.js').Pokemon;
 var Trainer = require(__dirname+'/models/js/trainer.model.js').Trainer;
+// Logged in users are temporary stored in this array for future requests.
+var availableUsers = [];
 
 // Routing : API
-// GET : all todos
-app.get('/api/todos', function(req, res) {
-  Todo.find(function(error, todos) {
-    if (error) res.send(error); // Return error response
-
-    res.json(todos); // Return found Todos as JSON
-  })
-});
-
-// POST : create new todo
-app.post('/api/todos', function(req, res) {
-  console.log(req);
-  Todo.create({
-    text : req.body.text
-  }, function(error, todo) {
-    if (error) res.send(error); // Return error response
-
-    Todo.find(function(error, todos) {
-      if (error) res.send(error); // Return error response
-
-      res.json(todos); // Return all Todos after a new one was created
-    });
-  });
-});
-
-// DELETE : delete a todo
-app.delete('/api/todos/:todo_id', function(req, res) {
-  Todo.remove({
-    _id : req.params.todo_id
-  }, function (error, todo) {
-      if (error) res.send(error); // Return error response
-
-      Todo.find(function(error, todos) {
-        if (error) res.send(error); // Return error response
-
-        res.json(todos); // Return all Todos after one was deleted
-      });
-  });
-});
-
 // GET : Complete Pokedexs
 app.get('/api/pokedex', function(req, res) {
   res.sendFile(__dirname+'/models/json/pokedex.model.json')
@@ -166,6 +128,18 @@ app.post('/api/travel', function(req, res) {
 });
 
 /**
+* GET : All stored trainer accounts
+* Returns : Trainer model objects
+*/
+app.get('/api/trainer', function(req, res) {
+  Trainer.find({}, function(error, trainers) {
+    if (error) {res.status('404'); res.send(error); return;}
+
+    res.json(trainers);
+  })
+});
+
+/**
 * POST : Login using PTC credentials
 * Returns Pokemon Go profile :
 *   creation date, username, team, avatar, poke & inv available storage,
@@ -198,9 +172,9 @@ app.post('/api/trainer/login/ptc', function(req, res) {
       token: authObjects.token,
       apiEndpoint: undefined,
       username: undefined, // Not your login username, but in-game one.
-      latitude: parseFloat(req.body.lat),
-      longitude: parseFloat(req.body.lng),
-      altitude: parseFloat(req.body.alt)
+      latitude: parseFloat(req.body.latitude),
+      longitude: parseFloat(req.body.longitude),
+      altitude: parseFloat(req.body.altitude)
     }
 
     CustomAPI.getApiEndpoint(trainerObj, function(error, trainerObj) {
@@ -214,14 +188,18 @@ app.post('/api/trainer/login/ptc', function(req, res) {
       CustomAPI.getTrainerData(trainerObj, function(error, statistics) {
         if (error) {res.status('400'); res.send(error); return;}
 
+        trainerObj.username = statistics.username;
+        availableUsers[trainerObj.username] = trainerObj;
+        console.log(availableUsers)
+
         // TODO Place this in a seperate method.
         Trainer.find({username: statistics.username}, function(error, trainer) {
           // If found, don't allow dupes. Else, insert new.
           // TODO : There's also currency and avatar data available.
           if (trainer) {
             Trainer.update(
-              {username:statistics.username},
-              {accessToken: trainerObj.token,
+              {username:statistics.username},       // Where username = username
+              {accessToken: trainerObj.token,       // Update values
                apiEndpoint: trainerObj.apiEndpoint,
                location: {
                  latitude: trainerObj.latitude,
@@ -233,9 +211,14 @@ app.post('/api/trainer/login/ptc', function(req, res) {
                  stardust: statistics.currencies[1].amount,
                }
               },
-              {runValidators:true},
-              function(error, obj) {
-                if (error) {res.status('409'); res.send(error); return;}
+              {runValidators:true},                 // Update options
+              function(error, obj) {                // Callback function
+                if (error) {
+                  res.status('409');
+                  res.send(error);
+                  console.log('[!] Error updating trainer')
+                  return;
+                }
                 console.log('[i] Updated trainer : '+statistics.username);
                 Trainer.find({username:statistics.username}, function(error, trainer) {
                   res.json(trainer);
@@ -244,6 +227,7 @@ app.post('/api/trainer/login/ptc', function(req, res) {
                 return;
               });
           } else {
+            // Creating a new trainer
             Trainer.create({
               login: {
                 type: provider,
@@ -274,11 +258,17 @@ app.post('/api/trainer/login/ptc', function(req, res) {
                 stardust: statistics.currencies[1].amount
               }
             }, function(error, trainerProfile) {
-              if (error) {res.status('500'); res.send(error); return;}
+              if (error) {
+                res.status('500');
+                res.send(error);
+                console.log('[!] Error creating trainer')
+                return;
+              }
+
               res.send(trainerProfile);
               return;
             }); // Trainer.create()
-          }
+          }   // if (trainer) else
         }); // Trainer.find()
       }); // getTrainerData()
     }); // getApiEndpoint()
@@ -286,16 +276,44 @@ app.post('/api/trainer/login/ptc', function(req, res) {
 }); // request.post()
 
 /**
-* GET : Get access token after signed in successfully
+* GET : Get trainer inventory
+* Params : username (String) (in-game username)
+* Returns : Medals, levels and other junk
 */
-app.get('api/trainer/accesstoken', function(req, res) {
-  res.send(getAccessToken());
+app.get('/api/trainer/inventory', function(req, res) {
+  console.log('Requesting data for user : '+req.query.username);
+  var trainerObj = availableUsers[req.query.username];
+  console.log(trainerObj);
+
+  if (!trainerObj) {
+    console.log('[!] This user is not currently logged in!');
+    res.status('400');
+    res.send('Not logged in');
+    return;
+  }
+
+  CustomAPI.getTrainerInventory(trainerObj, function(error, inventoryObj) {
+    if (error) {res.status('400'); res.send(error); return}
+
+    console.log('[i] Sucessfully retrieved trainer inventory')
+    // inventory_delta.inventory_items[1].inventory_item_data.player_stats = levels, exp and certain badges
+    // inventory_delta.inventory_items[2].inventory_item_data.candy = candies
+    // inventory_delta.inventory_items[3].inventory_item_data.egg_incubator[x] = egg incubators
+    // inventory_delta.inventory_items[4].inventory_item_data.pokedex_entry = pokedex stats
+    // inventory_delta.inventory_items[5].inventory_item_data.item = items (insense was listed)
+    // inventory_delta.inventory_items[6].inventory_item_data.item = more items?? Incubators again??
+    // inventory_delta.inventory_items[7].inventory_item_data.pokemon_data = pokemon party
+
+
+    // Trainer.update(
+    //   {username:trainerObj.username},
+    //   {});
+
+    console.log(inventoryObj)
+    res.send(inventoryObj);
+    return;
+  })
 });
-
-// Get access token from PoGo servers
-function getAccessToken(username, password) {
-
-}
 
 // Scrape images from serebii
 // app.get('/api/pokedex/images', function(req, res) {

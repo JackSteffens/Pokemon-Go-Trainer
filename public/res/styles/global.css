@@ -8,6 +8,16 @@ body {
   height: 100vh;
 }
 
+.md-modal-container {
+  width: 800px;
+}
+
+@media screen and (max-width: 1000px) {
+    .md-modal-container {
+        max-width: 80%;
+    }
+}
+
 .map-options-container {
   position: absolute;
   bottom: 1em;
