@@ -8,16 +8,19 @@ function($scope, $rootScope, $http, $mdDialog) {
 
   // Scope functions
   $scope.loginPopup = loginPopup;
+  $scope.getAccounts = getAccounts;
 
-  $http({
-    method: 'GET',
-    url: 'http://localhost:3000/api/trainer'
-  }).then(function successCallback(response) {
-    $scope.accounts = response.data;
-  }, function errorCallback(response) {
-    console.log('An error occured');
-    console.log(response);
-  });
+  function getAccounts() {
+    $http({
+      method: 'GET',
+      url: 'http://localhost:3000/api/trainer'
+    }).then(function successCallback(response) {
+      $scope.accounts = response.data;
+    }, function errorCallback(response) {
+      console.log('An error occured');
+      console.log(response);
+    });
+  }
 
   function loginPopup(event, account) {
     $mdDialog.show({
@@ -34,7 +37,22 @@ function($scope, $rootScope, $http, $mdDialog) {
             console.log(account);
         }
       }
+    }).then(function successCallback() {
+      getAccounts();
+    }, function errorCallback() {
+      $mdDialog.show(
+        $mdDialog.alert()
+          .parent(document.body)
+          .clickOutsideToClose(true)
+          .title('Error')
+          .textContent('Something went wrong while logging in')
+          .ariaLabel('Login error')
+          .ok('Ok')
+          .targetEvent(event)
+      );
     });
   }
+  // Start
+  getAccounts();
 }
 ]);

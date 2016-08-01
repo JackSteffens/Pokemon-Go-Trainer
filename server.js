@@ -141,78 +141,158 @@ app.get('/api/trainer', function(req, res) {
 
 /**
 * POST : Login using PTC credentials
+* Params : username (String), password (String), latitude (Float),
+*   longitude (Float), altitude (Float), provider (String).
 * Returns Pokemon Go profile :
 *   creation date, username, team, avatar, poke & inv available storage,
 *   daily bonus ??, pokecoins & stardust.
 */
-app.post('/api/trainer/login/ptc', function(req, res) {
+app.post('/api/trainer/login', function(req, res) {
   // var trainer = new PokemonGO.Pokeio();
   var username = req.body.username;
   var password = req.body.password;
-  var provider = "ptc";
+  var provider = req.body.provider;
 
   if (username == undefined || password == undefined) {
     res.status('400');
     res.send('Both a username and password are required');
   }
 
-  console.log('[i] Logging in as : '+username);
   // console.log(CustomAPI);
-  CustomAPI.pokemonClub(username, password, function(err, authObjects) {
-    if (err) {
-      console.log("[!] Error : "+err);
-      res.status('400');
-      res.send(err);
-      return;
-    }
-
-    var trainerObj = {
-      provider: provider,
-      ticket: authObjects.ticket,
-      token: authObjects.token,
-      apiEndpoint: undefined,
-      username: undefined, // Not your login username, but in-game one.
-      latitude: parseFloat(req.body.latitude),
-      longitude: parseFloat(req.body.longitude),
-      altitude: parseFloat(req.body.altitude)
-    }
-
-    CustomAPI.getApiEndpoint(trainerObj, function(error, trainerObj) {
-      if (error) {
-        console.log("[!] "+error);
+  if (req.body.provider === 'ptc'){
+    console.log('[i] Logging in as : '+username+' on Pokémon Trading club');
+    CustomAPI.pokemonClub(username, password, function(err, authObjects) {
+      if (err) {
+        console.log("[!] Error : "+err);
         res.status('400');
-        res.send(error);
+        res.send(err);
         return;
       }
+      postLogin(authObjects, req, res);
+      return;
+    }); // pokemonClub()
+  } else if (req.body.provider === 'google') {
+    console.log('[i] Logging in as : '+username+' on Google');
+    CustomAPI.googleOAuth(username, password, function (err, authObjects) {
+      if (err) {
+        console.log("[!] Error : "+err);
+        res.status('400');
+        res.json(err);
+        return;
+      }
+      console.log(authObjects);
+      postLogin(authObjects, req, res);
+      return;
+    })
+  } else {
+    res.status('400');
+    res.send('[#] No provider provided');
+    return;
+  }
+}); // request.post()
 
-      CustomAPI.getTrainerData(trainerObj, function(error, statistics) {
-        if (error) {res.status('400'); res.send(error); return;}
+/**
+* function postLogin(authObjects, req, res);
+* Params : authObjects {ticket (String), token (String)},
+*   req (Request.request), res (Request.response).
+* Returns : trainer (Object, Trainer.model) (via Request.response).
+*/
+function postLogin(authObjects, req, res) {
+      var trainerObj = {
+        provider: (req.body.provider).toString(),
+        ticket: authObjects.ticket,
+        token: authObjects.token,
+        apiEndpoint: undefined,
+        username: undefined, // Not your login username, but in-game one.
+        latitude: parseFloat(req.body.latitude),
+        longitude: parseFloat(req.body.longitude),
+        altitude: parseFloat(req.body.altitude)
+      }
 
-        trainerObj.username = statistics.username;
-        availableUsers[trainerObj.username] = trainerObj;
-        console.log(availableUsers)
+      console.log('login()')
+      console.log(trainerObj);
 
-        // TODO Place this in a seperate method.
-        Trainer.find({username: statistics.username}, function(error, trainer) {
-          // If found, don't allow dupes. Else, insert new.
-          // TODO : There's also currency and avatar data available.
-          if (trainer) {
-            Trainer.update(
-              {username:statistics.username},       // Where username = username
-              {accessToken: trainerObj.token,       // Update values
-               apiEndpoint: trainerObj.apiEndpoint,
-               location: {
-                 latitude: trainerObj.latitude,
-                 longitude: trainerObj.longitude,
-               altitude: trainerObj.altitude
-               },
-               currency: {
-                 pokecoin: statistics.currencies[0].amount,
-                 stardust: statistics.currencies[1].amount,
-               }
-              },
-              {runValidators:true},                 // Update options
-              function(error, obj) {                // Callback function
+      CustomAPI.getApiEndpoint(trainerObj, function(error, trainerObj) {
+        if (error) {
+          console.log("[!] "+error);
+          res.status('400');
+          res.send(error);
+          return;
+        }
+
+        CustomAPI.getTrainerData(trainerObj, function(error, statistics) {
+          if (error) {res.status('400'); res.send(error); return;}
+
+          trainerObj.username = statistics.username;
+          availableUsers[trainerObj.username] = trainerObj;
+          console.log(availableUsers)
+
+          // TODO Place this in a seperate method.
+          Trainer.findOne({username: statistics.username}, function(error, trainer) {
+            // If found, don't allow dupes. Else, insert new.
+            // TODO : There's also currency and avatar data available.
+            if (trainer) {
+              Trainer.update(
+                {username:statistics.username},       // Where username = username
+                {accessToken: trainerObj.token,       // Update values
+                 apiEndpoint: trainerObj.apiEndpoint,
+                 location: {
+                   latitude: trainerObj.latitude,
+                   longitude: trainerObj.longitude,
+                 altitude: trainerObj.altitude
+                 },
+                 currency: {
+                   pokecoin: statistics.currencies[0].amount,
+                   stardust: statistics.currencies[1].amount,
+                 }
+                },
+                {runValidators:true},                 // Update options
+                function(error, obj) {                // Callback function
+                  if (error) {
+                    res.status('409');
+                    res.send(error);
+                    console.log('[!] Error updating trainer')
+                    return;
+                  }
+                  console.log('[i] Updated trainer : '+statistics.username);
+                  Trainer.findOne({username:statistics.username}, function(error, trainer) {
+                    res.json(trainer);
+                    return;
+                  })
+                  return;
+                });
+            } else {
+              // Creating a new trainer
+              Trainer.create({
+                login: {
+                  type: trainerObj.provider,
+                  username: req.body.username,
+                  accessToken: trainerObj.token,
+                  apiEndpoint: trainerObj.apiEndpoint
+                },
+                location: {
+                  latitude: trainerObj.latitude,
+                  longitude: trainerObj.longitude,
+                  altitude: trainerObj.altitude
+                },
+                username: statistics.username,
+                team: statistics.team,
+                avatar: {
+                  skin: statistics.avatar.skin,
+                  hair: statistics.avatar.hair,
+                  shirt: statistics.avatar.shirt,
+                  pants: statistics.avatar.pants,
+                  hat: statistics.avatar.hat,
+                  shoes: statistics.avatar.shoes,
+                  gender: statistics.avatar.gender,
+                  eyes: statistics.avatar.eyes,
+                  backpack: statistics.avatar.backpack
+                },
+                currency: {
+                  pokecoin: statistics.currencies[0].amount,
+                  stardust: statistics.currencies[1].amount
+                }
+              }, function(error, obj) { // Callback function
                 if (error) {
                   res.status('409');
                   res.send(error);
@@ -220,68 +300,28 @@ app.post('/api/trainer/login/ptc', function(req, res) {
                   return;
                 }
                 console.log('[i] Updated trainer : '+statistics.username);
-                Trainer.find({username:statistics.username}, function(error, trainer) {
+                Trainer.findOne({username:statistics.username}, function(error, trainer) {
+                  if (error) {res.status('404'); res.send('[#] Something went wrong creating a new trainer'); return;}
+                  console.log('CREATED TRAINER');
+                  console.log(trainer);
                   res.json(trainer);
                   return;
                 })
                 return;
-              });
-          } else {
-            // Creating a new trainer
-            Trainer.create({
-              login: {
-                type: provider,
-                username: username,
-                accessToken: trainerObj.token,
-                apiEndpoint: trainerObj.apiEndpoint
-              },
-              location: {
-                latitude: trainerObj.latitude,
-                longitude: trainerObj.longitude,
-                altitude: trainerObj.altitude
-              },
-              username: statistics.username,
-              team: statistics.team,
-              avatar: {
-                skin: statistics.avatar.skin,
-                hair: statistics.avatar.hair,
-                shirt: statistics.avatar.shirt,
-                pants: statistics.avatar.pants,
-                hat: statistics.avatar.hat,
-                shoes: statistics.avatar.shoes,
-                gender: statistics.avatar.gender,
-                eyes: statistics.avatar.eyes,
-                backpack: statistics.avatar.backpack
-              },
-              currency: {
-                pokecoin: statistics.currencies[0].amount,
-                stardust: statistics.currencies[1].amount
-              }
-            }, function(error, trainerProfile) {
-              if (error) {
-                res.status('500');
-                res.send(error);
-                console.log('[!] Error creating trainer')
-                return;
-              }
-
-              res.send(trainerProfile);
-              return;
-            }); // Trainer.create()
-          }   // if (trainer) else
-        }); // Trainer.find()
-      }); // getTrainerData()
-    }); // getApiEndpoint()
-  }); // pokemonClub()
-}); // request.post()
+              }); // Trainer.create()
+            }   // if (trainer) else
+          }); // Trainer.find()
+        }); // getTrainerData()
+      }); // getApiEndpoint()
+} // postLogin()
 
 /**
 * GET : Get trainer inventory
 * Params : username (String) (in-game username)
-* Returns : Medals, levels and other junk
+* Returns :
 */
 app.get('/api/trainer/inventory', function(req, res) {
-  console.log('Requesting data for user : '+req.query.username);
+  console.log('[!] Requesting inventory for user : '+req.query.username);
   var trainerObj = availableUsers[req.query.username];
   console.log(trainerObj);
 
@@ -296,24 +336,79 @@ app.get('/api/trainer/inventory', function(req, res) {
     if (error) {res.status('400'); res.send(error); return}
 
     console.log('[i] Sucessfully retrieved trainer inventory')
-    // inventory_delta.inventory_items[1].inventory_item_data.player_stats = levels, exp and certain badges
-    // inventory_delta.inventory_items[2].inventory_item_data.candy = candies
-    // inventory_delta.inventory_items[3].inventory_item_data.egg_incubator[x] = egg incubators
-    // inventory_delta.inventory_items[4].inventory_item_data.pokedex_entry = pokedex stats
-    // inventory_delta.inventory_items[5].inventory_item_data.item = items (insense was listed)
-    // inventory_delta.inventory_items[6].inventory_item_data.item = more items?? Incubators again??
-    // inventory_delta.inventory_items[7].inventory_item_data.pokemon_data = pokemon party
-
 
     // Trainer.update(
     //   {username:trainerObj.username},
     //   {});
 
-    console.log(inventoryObj)
+    console.log(inventoryObj);
     res.send(inventoryObj);
     return;
   })
-});
+}); // request.get()
+
+/**
+* GET : trainer profile
+* Params : username (String) (in-game username)
+* Returns : Medals, levels and other junk
+*/
+app.get('/api/trainer/profile', function(req, res) {
+  console.log('[!] Requesting profile for user : '+req.query.username);
+  var trainerObj = availableUsers[req.query.username];
+  console.log(trainerObj);
+
+  if (!trainerObj) {
+    console.log('[!] This user is not currently logged in!');
+    res.status('400');
+    res.send('Not logged in');
+    return;
+  }
+
+  CustomAPI.getTrainerProfile(trainerObj, function(error, profileObj) {
+    if (error) {
+      res.status('400');
+      res.send('error');
+      console.log('[#] '+error);
+      return;
+    }
+
+    // Update trainer
+
+    console.log(profileObj);
+    res.send(profileObj);
+    return;
+  })
+}); //request.get()
+
+/**
+* POST : Log out a user
+* Params : username
+*/
+app.post('/api/trainer/logout', function(req, res) {
+  var username = (req.body.username || req.query.username);
+  if (!username) {
+    console.log('[#] No username supplied.');
+    res.status('400');
+    res.send('No username supplied');
+    return;
+  }
+
+  var trainerObj = availableUsers[username];
+
+  if (!trainerObj) {
+    console.log('[#] User '+username+' was not logged in or does not exist.')
+    res.status('404');
+    res.send('User not found. User was not logged in or does not exist.')
+    return;
+  }
+
+  console.log(trainerObj);
+  delete availableUsers[username];
+  console.log(availableUsers)
+
+  // update trainerObj to lose it's ticket, token and endpoint
+  // remove trainer from availaleUsers
+}); // request.post();
 
 // Scrape images from serebii
 // app.get('/api/pokedex/images', function(req, res) {

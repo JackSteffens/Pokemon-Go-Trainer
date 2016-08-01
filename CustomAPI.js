@@ -3,6 +3,7 @@
 var bodyParser = require('body-parser');  // ?? request parser ??
 var request = require('request');         // HTTP requests
 var protobuf = require('protobufjs');     // Decoding responses using .proto
+var GoogleOAuth = require('gpsoauthnode');// Google authentication
 
 // Protocol Buffer
 var builder = protobuf.loadProtoFile('POGOProtos.proto');
@@ -12,18 +13,23 @@ if (builder === null) {
     console.log('[!] No .proto file found!');
 }
 var Proto = builder.build();
-// console.log(Proto);
 var RequestNetwork = Proto.POGOProtos.Networking.Requests;
 var ResponseNetwork = Proto.POGOProtos.Networking.Responses;
 var RequestEnvelope = Proto.POGOProtos.Networking.Envelopes.RequestEnvelope;
 var ResponseEnvelope = Proto.POGOProtos.Networking.Envelopes.ResponseEnvelope;
-// console.log(Proto.POGOProtos.Networking.Envelopes);
+
+// Google oAuth
+var google = new GoogleOAuth();
 
 // Server URL
 var LOGIN_URL = "https://sso.pokemon.com/sso/login?service=https%3A%2F%2Fsso.pokemon.com%2Fsso%2Foauth2.0%2FcallbackAuthorize";
 var LOGIN_OAUTH = "https://sso.pokemon.com/sso/oauth2.0/accessToken";
 var API_URL = "https://pgorelease.nianticlabs.com/plfe/rpc";
+var ANDROID_ID = "9774d56d682e549c";
 var REQ_HEADERS = {'User-Agent' : 'Niantic App'};
+var OAUTH_SERVICE = 'audience:server:client_id:848232511240-7so421jotr2609rmqakceuu1luuq0ptb.apps.googleusercontent.com';
+var APP = 'com.nianticlabs.pokemongo';
+var CLIENT_SIG = '321187995bc7cdc2b5fc91b11a96e2baa8602c62';
 request = request.defaults({jar: request.jar()}); // For some reason this shit is needed to log in.
 
 function api_req(trainerObj, req, callback) {
@@ -206,8 +212,28 @@ module.exports = {
   },
   // End pokemonClub() function
 
-  googleOAuth: function(stuff, callback) {
-    // Implement google authentication.
+  googleOAuth: function(user, pass, callback) {
+      var authObjects = {
+        ticket : undefined,
+        token : undefined,
+        endpoint : undefined
+      }
+    google.login(user, pass, ANDROID_ID, function(error, data) {
+      if (error) {
+        console.log('[#] Error logging into Google services')
+        return callback(error);
+      }else if (data) {
+        google.oauth(user, data.masterToken, data.androidId, OAUTH_SERVICE, APP, CLIENT_SIG, function(error, data) {
+          if (error) {
+            console.log('[#] Error retrieving oauth data from Google services')
+            return callback(error);
+          }
+          console.log('[i] Google login succesfull');
+          authObjects.token = data.Auth;
+          callback(null, authObjects);
+        })
+      }
+    })
   },
   // End googleOAuth() function
 
@@ -231,7 +257,7 @@ module.exports = {
         console.log("[i] ApiEndpoint received! : "+api_endpoint);
         return callback(null, trainerObj);
       } else {
-        return callback('[!] No api url received!')
+        return callback('[#] No api url received!')
       }
     });
   },
@@ -243,7 +269,7 @@ module.exports = {
       if (error) {
         return callback(error);
       } else if (!response || !response.returns || !response.returns[0]) {
-        return callback('[!] No results');
+        return callback('[#] No results');
       }
 
       var statistics = ResponseNetwork.GetPlayerResponse.decode(response.returns[0]);
@@ -263,7 +289,7 @@ module.exports = {
         return callback(error);
       } else if (!response || !response.returns || !response.returns[0]) {
         console.log(response)
-        return callback('[!] No results');
+        return callback('[#] No results');
       }
 
       var data = ResponseNetwork.GetInventoryResponse.decode(response.returns[0]);
@@ -281,5 +307,23 @@ module.exports = {
       return callback(null, inventoryObj);
     });
   },
-  // End getTrainerProfile() function
+  // End getTrainerInventory() function
+
+  getTrainerProfile: function (trainerObj, callback) {
+    var req = new RequestNetwork.Request(121);
+
+    api_req(trainerObj, req, function(error, response) {
+      if (error) {
+        return callback(error);
+      } else if (!response || !response.returns || !response.returns[0]) {
+        console.log(response);
+        return callback('[#] No results');
+      }
+
+      var data = ResponseNetwork.GetPlayerProfileResponse.decode(response.returns[0]);
+
+      console.log(data);
+      return callback(null, data);
+    })
+  }
 }
