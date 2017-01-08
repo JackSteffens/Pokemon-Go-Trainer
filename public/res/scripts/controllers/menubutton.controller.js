@@ -1,12 +1,10 @@
-angular.module('pogobot').controller('MenuButtonCtrl', [
-  '$scope', '$mdSidenav',
+angular.module('pogobot').controller('MenuButtonCtrl',
 function($scope, $mdSidenav) {
-
-  // Variables
-  $scope.icon = "menu";
-
-  // Functions
+  // Scope functions
   $scope.toggleSidenav = toggleSidenav;
+
+  // Scope variables
+  $scope.icon = "menu";
 
   $mdSidenav('left', true).then(function(instance) {
       $scope.$watch(
@@ -30,6 +28,4 @@ function($scope, $mdSidenav) {
         $scope.icon = "close";
     }
   }
-
-}
-]);
+});

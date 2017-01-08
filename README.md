@@ -27,3 +27,8 @@ View interface in browser :
 ## Development requirements
 Same as installation requirements plus :
 - grunt-cli [npm install grunt-cli -g] (globally)
+
+## Troubleshooting
+Logging in with a Google account causes " 403 Forbidden "
+- Accounts with 2 way authentication are currently not supported.
+  Create an app password https://security.google.com/settings/security/apppasswords

@@ -1,7 +1,5 @@
-angular.module('pogobot')
-  .controller('AccountsCtrl', [
-  '$scope', '$rootScope', '$http', '$mdDialog',
-function($scope, $rootScope, $http, $mdDialog) {
+angular.module('pogobot').controller('AccountsCtrl',
+function($scope, $rootScope, $http, $mdDialog, Api) {
   // Scope variables
   $rootScope.currentUI = 'accounts';
   $scope.accounts = {};
@@ -13,7 +11,7 @@ function($scope, $rootScope, $http, $mdDialog) {
   function getAccounts() {
     $http({
       method: 'GET',
-      url: 'http://localhost:3000/api/trainer'
+      url: Api.url.trainer
     }).then(function successCallback(response) {
       $scope.accounts = response.data;
     }, function errorCallback(response) {
@@ -54,5 +52,4 @@ function($scope, $rootScope, $http, $mdDialog) {
   }
   // Start
   getAccounts();
-}
-]);
+});

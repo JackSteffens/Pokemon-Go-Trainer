@@ -66,11 +66,11 @@
       </div>
 
       <!-- General pages -->
-      <div ng-repeat="page in pages track by $index">
+      <div ng-repeat="route in routes">
         <md-menu-item>
-          <md-button ui-sref="{{routes[$index]}}" ng-click="closeSidenav()" ui-sref-active="selected">
-            <md-icon class="material-icons">{{icons[$index]}}</md-icon>
-            <span>{{page}}</span>
+          <md-button ui-sref="{{route.route}}" ng-click="closeSidenav()" ui-sref-active="selected">
+            <md-icon class="material-icons">{{route.icon}}</md-icon>
+            <span>{{route.label}}</span>
           </md-button>
         </md-menu-item>
         <md-menu-divider></md-menu-divider>

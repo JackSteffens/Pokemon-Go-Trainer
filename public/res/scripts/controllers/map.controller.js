@@ -1,9 +1,8 @@
-angular.module('pogobot')
-.controller('MapCtrl', [
-  '$scope', '$rootScope', '$mdSidenav', '$http', 'NgMap',
-function($scope, $rootScope, $mdSidenav, $http, NgMap) {
+angular.module('pogobot').controller('MapCtrl',
+function($scope, $rootScope, $mdSidenav, $http, NgMap, Api) {
   // Variables
   var map;
+  var EXTERNAL_SCANNER = false;
 
   // Scope variables
   $rootScope.currentUI = 'map';
@@ -40,10 +39,10 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap) {
     this.map.showInfoWindow('info-window-pokemon', this);
   }
 
-  function getDirections(oLat, oLng, dLat, dLng) {
+  function getDirections(originLat, originLng, destLat, destLng) {
     $http({
       method: 'GET',
-      url: 'http://localhost:3000/api/map/path?originlat=52.360102&originlng=4.786153&destlat=52.350992&destlng=4.77924'
+      url: Api.url.path+'?originlat=52.360102&originlng=4.786153&destlat=52.350992&destlng=4.77924'
     }).then(function successCallback(response) {
       // var directionsObject = google.maps.DirectionsRenderer;
       // console.log(directionsObject)
@@ -56,6 +55,7 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap) {
     NgMap.getMap('map').then(function(map) {
       console.log(map);
       this.map = map;
+      // Create a service for characters and center the map based on character's location rather than setting the char's location based on map's center.
       $scope.character.lat = map.center.lat();
       $scope.character.lng = map.center.lng();
     });
@@ -76,7 +76,7 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap) {
   function getPokedex() {
     $http({
       method: 'GET',
-      url: '/api/pokedex'
+      url: Api.url.pokedex
     }).then(function successCallback(response) {
       $scope.pokedex = response.data;
       createIcons();
@@ -86,10 +86,13 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap) {
     });
   }
 
+  /**
+  * Fetch data from static scanner file and save into scope
+  */
   function getNearbyPokemon() {
     $http({
       method: 'GET',
-      url: '/api/nearby/pokemon'
+      url: Api.url.scanner
     }).then(function successCallback(response) {
       $scope.pokemon = response.data;
     }, function errorCallback(response) {
@@ -98,25 +101,31 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap) {
     });
   }
 
+  /**
+  * Fetch data from scanner API and save into scope
+  */
   function getNearbyData() {
-    $http({
-      method: 'GET',
-      url: '/api/nearby/pokemon/ext'
-    }).then(function successCallback(response) {
-      console.log(JSON.parse(response.data))
-      $scope.pokemon = JSON.parse(response.data).pokemons;
-      $scope.pokestops = JSON.parse(response.data).pokestops;
-      $scope.gyms = JSON.parse(response.data).gyms;
-    }, function errorCallback(response) {
-      console.warn('An error occured');
-      console.log(response);
-    });
+    if (EXTERNAL_SCANNER) {
+      $http({
+        method: 'GET',
+        url: Api.url.scannerExt
+      }).then(function successCallback(response) {
+        console.log(JSON.parse(response.data))
+        $scope.pokemon = JSON.parse(response.data).pokemons;
+        $scope.pokestops = JSON.parse(response.data).pokestops;
+        $scope.gyms = JSON.parse(response.data).gyms;
+      }, function errorCallback(response) {
+        console.warn('An error occured');
+        console.log(response);
+      });
+    } else {
+      getNearbyPokemon();
+    }
   }
 
   // Start
   getPokedex();
-  // getNearbyPokemon();
   getNearbyData();
   getDirections();
   getMap();
-}]);
+});
