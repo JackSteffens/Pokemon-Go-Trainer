@@ -1,5 +1,6 @@
 // Dependencies
-var config = require(__dirname+'/../config.js');
+var config = require('../config.js');
+var mapService = require(__dirname+'/../services/map.service.js');
 var request = require('request');
 var path = require('path');
 

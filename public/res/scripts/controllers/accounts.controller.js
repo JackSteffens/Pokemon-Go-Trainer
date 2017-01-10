@@ -7,6 +7,7 @@ function($scope, $rootScope, $http, $mdDialog, Api) {
   // Scope functions
   $scope.loginPopup = loginPopup;
   $scope.getAccounts = getAccounts;
+  $scope.getAvailableTrainers = getAvailableTrainers;
 
   function getAccounts() {
     $http({
@@ -20,6 +21,17 @@ function($scope, $rootScope, $http, $mdDialog, Api) {
     });
   }
 
+  function getAvailableTrainers() {
+    $http({
+      method: 'GET',
+      url: Api.url.availableTrainers
+    }).then(function successCallback(response) {
+      console.log(response.data);
+    }, function errorCallback(response) {
+      console.log('error fetching online trainers')
+    });
+  }
+
   function loginPopup(event, account) {
     $mdDialog.show({
       controller: 'loginCtrl',
@@ -27,27 +39,15 @@ function($scope, $rootScope, $http, $mdDialog, Api) {
       parent: angular.element(document.body),
       targetEvent: event,
       clickOutsideToClose: false,
-      scope: $scope,
-      preserveScope: true,
+      scope: $scope.$new(),
+      preserveScope: false,
       resolve: {
         trainerObj: function () {
             return account;
-            console.log(account);
         }
       }
     }).then(function successCallback() {
       getAccounts();
-    }, function errorCallback() {
-      $mdDialog.show(
-        $mdDialog.alert()
-          .parent(document.body)
-          .clickOutsideToClose(true)
-          .title('Error')
-          .textContent('Something went wrong while logging in')
-          .ariaLabel('Login error')
-          .ok('Ok')
-          .targetEvent(event)
-      );
     });
   }
   // Start

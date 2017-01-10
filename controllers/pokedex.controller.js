@@ -1,5 +1,5 @@
 // Dependencies
-var config = require(__dirname+'/../config.js');
+var config = require('../config.js');
 var path = require('path');
 
 /**

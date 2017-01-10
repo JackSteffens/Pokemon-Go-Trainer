@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');  // ?? request parser ??
 var fs = require('fs');                   // FileStream
 var config = require('./config.js');      // Config params
 var router = require('./routes.js');      // Controller routing
+var clearTokens = require('./utils/clearTokens.js'); // Clearing tokens
 
 // Configuration
 var app = express();
@@ -23,10 +24,7 @@ app.use(bodyParser.json({type : 'application/vnd.api+json'}));
 // Set routing
 router.setRequestUrl(app);
 
-// Open server
-app.on('listening', function () {
-  console.log('Clear database trainer keys');
+app.listen(3000, 'localhost', function() {
+  clearTokens.init();
+  console.log("Server starting on port 3000");
 });
-
-app.listen(3000);
-console.log("Server starting on port 3000");

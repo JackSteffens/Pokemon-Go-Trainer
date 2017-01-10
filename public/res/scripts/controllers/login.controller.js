@@ -1,12 +1,12 @@
 angular.module('pogobot').controller('loginCtrl',
-function($scope, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api) {
+function($scope, $timeout, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api, $mdToast) {
   $scope.trainerObj = trainerObj;
 
   if (trainerObj) {
     $scope.authObj = {
       username: $scope.trainerObj.login.username,
       password: "",
-      provider: $scope.trainerObj.login.type,
+      provider: $scope.trainerObj.login.provider,
       latitude: parseFloat($scope.trainerObj.location.latitude),
       longitude: parseFloat($scope.trainerObj.location.longitude),
       altitude: parseFloat($scope.trainerObj.location.altitude)
@@ -23,7 +23,7 @@ function($scope, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api) {
   }
 
   // Google Maps doesn't like redrawing itself. Force a redraw by faking a resize event.
-  setTimeout(
+  $timeout(
     NgMap.getMap({id:"coordMap"}).then(function(map) {
       var coords = new google.maps.LatLng($scope.authObj.latitude, $scope.authObj.longitude);
       window.map = map;
@@ -45,15 +45,17 @@ function($scope, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api) {
       data: $scope.authObj
     }).then(function successCallback(response) {
       console.log(response);
-      setTimeout(getPlayerInventory(response.data) ,1000); // Doing requests too quickly fucks shit up
-      // $scope.loginDisabled = false;
       $mdDialog.hide('succesful login');
     }, function errorCallback(error) {
       console.log(error);
       $scope.loginDisabled = false;
       $scope.isLoading = false;
-      // Display warning rather than closing the dialog
-      // $mdDialog.cancel('Failed logging in');
+    $mdToast.show(
+      $mdToast.simple()
+        .textContent('Logging in failed!')
+        .position("top right")
+        .hideDelay(3000)
+    );
     });
   }
 

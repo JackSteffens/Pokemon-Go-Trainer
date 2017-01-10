@@ -53,9 +53,8 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap, Api) {
 
   function getMap() {
     NgMap.getMap('map').then(function(map) {
-      console.log(map);
       this.map = map;
-      // Create a service for characters and center the map based on character's location rather than setting the char's location based on map's center.
+      // TODO Create a service for characters and center the map based on character's location rather than setting the char's location based on map's center.
       $scope.character.lat = map.center.lat();
       $scope.character.lng = map.center.lng();
     });

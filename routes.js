@@ -20,6 +20,7 @@ exports.setRequestUrl = function(app) {
   app.post('/api/trainer/logout', trainer.logout);
   app.get('/api/trainer/inventory', trainer.getInventory);
   app.get('/api/trainer/profile', trainer.getProfile);
+  app.get('/api/trainer/available', trainer.getAvailableTrainers);
   app.post('/api/trainer/pokemon', trainer.createPokemon);
   app.get('/api/trainer/pokemon', trainer.getPokemon);
 

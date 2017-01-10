@@ -1,19 +1,17 @@
 // Dependencies
-var config = require(__dirname+"/../config.js");
+var config = require("../config.js");
 var request = require('request');
 var CustomAPI = require('../CustomAPI.js');
+var trainerService = require('../services/trainer.service.js');
 
 // Models
 var Pokemon = require('../models/js/pokemon.model.js').Pokemon;
 var Trainer = require('../models/js/trainer.model.js').Trainer;
 
-// Logged in users are temporary stored in this array for future requests.
-var availableUsers = [];
-
 request = request.defaults({jar: request.jar()}); // For some reason this is required to log in.
 
 /**
-* Get known trainers from database. If a username is given then only return
+* Get all known trainers from database. If a username is given then only return
 * that specific trainer oject.
 * @param (optional) String username
 * @return [{Trainer}]
@@ -28,13 +26,24 @@ exports.getTrainer = function(req, res) {
 };
 
 /**
+* Get logged in trainers from database. If a username is given then only return
+* that specific trainer object.
+*/
+exports.getAvailableTrainers = function(req, res) {
+  //
+  trainers = trainerService.getAvailableTrainers(null, function(trainers) {
+    res.send(trainers);
+  });
+}
+
+/**
 * Get trainer profile from Niantic server
 * @param String username
 * @return {Medals, Levels, something}
 */
 exports.getProfile = function(req, res) {
   console.log('[!] Requesting profile for user : '+req.query.username);
-  var trainerObj = availableUsers[req.query.username];
+  var trainerObj = trainerService.getAvailableTrainers(req.query.username);
   console.log(trainerObj);
 
   if (!trainerObj) {
@@ -67,7 +76,7 @@ exports.getProfile = function(req, res) {
 */
 exports.getInventory = function(req, res) {
   console.log('[!] Requesting inventory for user : '+req.query.username);
-  var trainerObj = availableUsers[req.query.username];
+  var trainerObj = trainerService.getAvailableTrainers(req.query.username);
   console.log(trainerObj);
 
   if (!trainerObj) {
@@ -101,31 +110,35 @@ exports.getInventory = function(req, res) {
 * @return {}
 */
 exports.login = function(req, res) {
-  // var trainer = new PokemonGO.Pokeio();
-  var username = req.body.username;
-  var password = req.body.password;
-  var provider = req.body.provider;
+  credentials = {
+    username : req.body.username,
+    password : req.body.password,
+    provider : req.body.provider,
+    latitude : parseFloat(req.body.latitude),
+    longitude: parseFloat(req.body.longitude),
+    altitude : parseFloat(req.body.altitude)
+  }
 
-  if (username == undefined || password == undefined) {
+  if (credentials.username == undefined || credentials.password == undefined) {
     res.status('400');
     res.send('Both a username and password are required');
   }
 
-  if (req.body.provider === 'ptc'){
-    console.log('[i] Logging in as : '+username+' on Pokémon Trading club');
-    CustomAPI.pokemonClub(username, password, function(err, authObjects) {
+  if (credentials.provider === 'ptc') {
+    console.log('[i] Logging in as : '+credentials.username+' on Pokémon Trading club');
+    trainerService.pokemonClub(credentials, function(err, trainerObj) {
       if (err) {
         console.log("[!] Error : "+err);
         res.status('400');
         res.send(err);
         return;
       }
-      postLogin(authObjects, req, res);
+      res.send(trainerObj);
       return;
-    }); // pokemonClub()
-  } else if (req.body.provider === 'google') {
-    console.log('[i] Logging in as : '+username+' on Google');
-    CustomAPI.googleOAuth(username, password, function (err, authObjects) {
+    });
+  } else if (credentials.provider === 'google') {
+    console.log('[i] Logging in as : '+credentials.username+' on Google');
+    trainerService.googleOAuth(credentials, function (err, trainerObj) {
       if (err) {
         console.log("[!] Error : "+err);
         res.status('400');
@@ -136,13 +149,12 @@ exports.login = function(req, res) {
         }
         return;
       }
-      console.log(authObjects);
-      postLogin(authObjects, req, res);
+      res.send(trainerObj);
       return;
     })
   } else {
     res.status('400');
-    res.send('[#] No valid provider provided');
+    res.send('[!] No valid provider provided');
     return;
   }
 };
@@ -161,7 +173,7 @@ exports.logout = function(req, res) {
     return;
   }
 
-  var trainerObj = availableUsers[username];
+  var trainerObj = trainerService.getAvailableTrainers(username);
 
   if (!trainerObj) {
     console.log('[#] User '+username+' was not logged in or does not exist.')
@@ -171,8 +183,9 @@ exports.logout = function(req, res) {
   }
 
   console.log(trainerObj);
-  delete availableUsers[username];
-  console.log(availableUsers)
+  // TODO This should happen upon logout. No need to call this function.
+  // trainerService.deleteAvailableTrainer(username);
+  // console.log(trainerService.getAvailableTrainers())
 
   // update trainerObj to lose it's ticket, token and endpoint
   // remove trainer from availaleUsers
@@ -266,8 +279,6 @@ function postLogin(authObjects, req, res) {
           if (error) {res.status('400'); res.send(error); return;}
 
           trainerObj.username = statistics.username;
-          availableUsers[trainerObj.username] = trainerObj;
-          console.log(availableUsers)
 
           // TODO Place this in a seperate method.
           Trainer.findOne({username: statistics.username}, function(error, trainer) {

@@ -10,6 +10,7 @@ function() {
     inventory   : this.baseUrl + "/trainer/inventory",
     pokemonTeam : this.baseUrl + "/trainer/pokemon",
     profile     : this.baseUrl + "/trainer/profile",
+    availableTrainers: this.baseUrl + "/trainer/available",
     pokedex     : this.baseUrl + "/pokedex",
     map         : this.baseUrl + "/map",
     path        : this.baseUrl + "/map/path",

@@ -4,10 +4,11 @@ var Schema = mongoose.Schema;
 
 var TrainerSchema = new Schema({
   login: {                                    // Login name, not required. Just for frontend
-    type: {type:String, required:true},       // PTC or Google
-    username: {type:String, required:false},  // Only needed when type is PTC ?? Really only for PTC ??
+    provider: {type:String, required:true},   // Provider 'ptc' or 'google'
+    username: {type:String, required:true},   // PTC Username or Google Gmail
+    ticket: {type:String, required:false},    // Ticket only required for PTC for token fetching
     accessToken: {type:String, required:true},// Token required for API calls
-    apiEndpoint: {type:String, required:true}// API endpoint for API calls
+    apiEndpoint: {type:String, required:true} // API endpoint for API calls
   },
   location: {
     latitude: {type:Number, required:true},   // API requests require player location
@@ -17,19 +18,21 @@ var TrainerSchema = new Schema({
   username: {type:String,                     // Name used in-game
              required:true,
              unique:true},
+  creation_timestamp: {type:Number, required:true},
+  team: {type:Number, required:true},
   level: {type:Number, required:false},       // Level
   xp: {type:Number, required:false},          // Current xp
-  team: {type:Number, required:false},        // Gym team
+  team: {type:Number, required:true},        // Gym team
   avatar: {                                   // Trainer's look
-    skin: {type:Number, required:false},      // Skin color
-    hair: {type:Number, required:false},      // Hair style
-    shirt: {type:Number, required:false},     // Shirt style
-    pants: {type:Number, required:false},     // Pants style
-    hat: {type:Number, required:false},       // Hat style
-    shoes: {type:Number, required:false},     // Shoe style
-    gender: {type:Number, required:false},    // Gender
-    eyes: {type:Number, required:false},      // Eyes color
-    backpack: {type:Number, required:false}   // Backpack style
+    skin: {type:Number, required:true},      // Skin color
+    hair: {type:Number, required:true},      // Hair style
+    shirt: {type:Number, required:true},     // Shirt style
+    pants: {type:Number, required:true},     // Pants style
+    hat: {type:Number, required:true},       // Hat style
+    shoes: {type:Number, required:true},     // Shoe style
+    gender: {type:Number, required:true},    // Gender
+    eyes: {type:Number, required:true},      // Eyes color
+    backpack: {type:Number, required:true}   // Backpack style
   },
   medals: {                                   // Medals and general progress
     km_walked: {type:Number, required:false},
@@ -51,8 +54,14 @@ var TrainerSchema = new Schema({
     small_rattata_caught: {type:Number, required:false}
   },
   currency: {
-    pokecoin: {type:Number, required:false},
-    stardust: {type:Number, required:false}
+    pokecoin: {type:Number, required:true},
+    stardust: {type:Number, required:true}
+  },
+  max_pokemon_storage: {type:Number, required:true},
+  max_item_storage: {type:Number, required:true},
+  daily_bonus: {
+    next_collected_timestamp: {type:Number, required:false},
+    next_defender_bonus_collect_timestamp: {type:Number, required:false}
   }
 });
 
