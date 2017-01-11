@@ -35,7 +35,7 @@ module.exports = {
       console.log('TODO Implement username filter. Returning all instead.')
     }
     Trainer.find({'login.accessToken': {$ne : null}}, function(error, trainers) {
-      callback(trainers);
+      return callback(error, trainers);
     });
   },
 
@@ -54,15 +54,11 @@ module.exports = {
 
       // Callback
       function(error, newTrainer) {
-        if (error) {
+        if (error)
           console.log('[!] Error updating trainer')
-          console.log(error);
-          callback(error, null);
-          return;
-        }
-        console.log('[i] Updated existing trainer : '+newTrainer.username);
-        callback(null, newTrainer);
-        return;
+        else
+          console.log('[i] Updated existing trainer : '+newTrainer.username);
+        return callback(error, newTrainer);
       });
   },
 
@@ -70,13 +66,11 @@ module.exports = {
     Trainer.create(
       trainer,
       function(error, newTrainer) {
-        if (error) {
-          console.log('[!] Error creating trainer')
-          console.log(error);
-          callback(error, null);
-          return;}
-        console.log('[i] Created new trainer : '+newTrainer.username);
-        callback(null, newTrainer);
+        if (error)
+          console.log('[!] Error creating trainer');
+        else
+          console.log('[i] Created new trainer : '+newTrainer.username);
+        return callback(error, newTrainer);
       }
     );
   }

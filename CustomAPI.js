@@ -166,24 +166,6 @@ module.exports = {
       console.log(inventoryObj);
       return callback(null, inventoryObj);
     });
-  },
-  // End getTrainerInventory() function
-
-  getTrainerProfile: function (trainerObj, callback) {
-    var req = new RequestNetwork.Request(121);
-
-    api_req(trainerObj, req, function(error, response) {
-      if (error) {
-        return callback(error);
-      } else if (!response || !response.returns || !response.returns[0]) {
-        console.log(response);
-        return callback('[#] No results');
-      }
-
-      var data = ResponseNetwork.GetPlayerProfileResponse.decode(response.returns[0]);
-
-      console.log(data);
-      return callback(null, data);
-    })
   }
+  // End getTrainerInventory() function
 }

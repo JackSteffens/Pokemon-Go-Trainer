@@ -3,6 +3,7 @@ var path = require('path');
 var config = require('../config.js');
 var CustomAPI = require('../CustomAPI.js');
 var trainerRepo = require(path.resolve(__dirname+'/../repositories/trainer.repository.js'))
+var badgeRepo = require(path.resolve(__dirname+'/../repositories/badge.repository.js'))
 
 var request = require('request');         // HTTP requests
 var protobuf = require('protobufjs');     // Decoding responses using .proto
@@ -87,7 +88,7 @@ function ptcLoginCallback(err, response, body, authObjects, credentials, callbac
 
   var ticket = response.headers['location'].split('ticket=')[1];
   if (!ticket) {return callback('No ticket found!', null);}
-  console.log('[i] ticket : '+ticket);
+  console.log('[!] ticket : '+ticket);
 
   authObjects.ticket = ticket;
 
@@ -120,7 +121,7 @@ function ptcLoginCallback(err, response, body, authObjects, credentials, callbac
     }
 
     authObjects.token = token;
-    console.log('[i] Session token: ' + token);
+    console.log('[!] Session token: ' + token);
     postTokenCallback(authObjects, credentials, callback);
   });
 }
@@ -156,12 +157,17 @@ function postTokenCallback(authObjects, credentials, callback) {
   }
   getApiEndpoint(trainerObj, function(error, trainerObj) {
     if (error) {callback(error, null); return;}
-
     getTrainerData(trainerObj, function(error, statistics) {
       if (error) {callback(error, null); return;}
-
       trainerObj = parseTrainerData(trainerObj, statistics);
-      console.log('[!] trainerObj : ');
+
+      getTrainerProfile(trainerObj, function(error, badges) {
+        if (badges)
+          getTrainerProfileCallback(trainerObj, badges);
+        else
+          console.log('[!] No badges returned from Niantic server')
+      }); // getTrainerProfile
+
       // Check if exists, update. Else, create new.
       trainerRepo.findTrainer(trainerObj.username, function(error, oldTrainer) {
         if (error) {
@@ -175,9 +181,9 @@ function postTokenCallback(authObjects, credentials, callback) {
           console.log("[!] New trainer. Storing in database")
           createTrainer(trainerObj, callback);
         }
-      })
-    });
-  });
+      }); // findTrainer
+    }); // getTrainerData
+  }); // getApiEndpoint
 }
 
 function parseTrainerData(trainerObj, statistics) {
@@ -214,6 +220,38 @@ function parseTrainerData(trainerObj, statistics) {
   };
 
   return trainerObj;
+}
+
+function getTrainerProfileCallback(trainerObj, badges) {
+  badgeRepo.findByUsername(trainerObj.username, function(error, oldBadges) {
+    if (!error) {
+      if (oldBadges) // updateBadges(username, badges);
+        badgeRepo.updateBadges(trainerObj.username, badges, function(error, newBadges) {
+          console.log('[i] Existing badges updated. Check database!');
+        });
+      else
+        badgeRepo.createBadges(trainerObj.username, badges, function(error, newBadges) {
+        console.log('[i] New badges created. Check database!');
+      });
+    }
+  });
+}
+
+function getTrainerProfile(trainerObj, callback) {
+  var req = new CustomAPI.RequestNetwork.Request(121);
+
+  CustomAPI.api_req(trainerObj, req, function apiCallback(error, response) {
+    if (error) {
+      return callback(error);
+    } else if (!response || !response.returns || !response.returns[0]) {
+      console.log('[!] No response, retrying call');
+      CustomAPI.api_req(trainerObj, req, apiCallback);
+    } else {
+      var data = CustomAPI.ResponseNetwork.GetPlayerProfileResponse.decode(response.returns[0]);
+      console.log('[i] Badges fetched!')
+      return callback(null, data);
+    }
+  })
 }
 
 function getTrainerData(trainerObj, callback) {
@@ -269,7 +307,7 @@ function getApiEndpoint(trainerObj, callback) {
     if (response.api_url) {
       var api_endpoint = "https://" + response.api_url + "/rpc";
       trainerObj.login.apiEndpoint = api_endpoint;
-      console.log("[i] ApiEndpoint received! : "+api_endpoint);
+      console.log("[!] ApiEndpoint received! : "+api_endpoint);
       return callback(null, trainerObj);
     } else {
       return callback('[#] No api url received!');
@@ -321,7 +359,7 @@ module.exports = {
             console.log('[#] Error retrieving oauth data from Google services')
             return callback(error);
           }
-          console.log('[i] Google login succesfull');
+          console.log('[!] Google login succesfull');
           authObjects.token = data.Auth;
           postTokenCallback(authObjects, credentials, callback);
         })
