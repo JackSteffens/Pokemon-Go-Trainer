@@ -1,10 +1,9 @@
 'use strict';
-
+// Dependencies
 var config = require('./config.js');
-var bodyParser = require('body-parser');  // ?? request parser ??
-var request = require('request');         // HTTP requests
-var protobuf = require('protobufjs');     // Decoding responses using .proto
-var GoogleOAuth = require('gpsoauthnode');// Google authentication
+var request = require('request');
+var protobuf = require('protobufjs');
+var GoogleOAuth = require('gpsoauthnode');
 
 // Protocol Buffer
 var builder = protobuf.loadProtoFile('POGOProtos.proto');
@@ -22,18 +21,13 @@ var ResponseEnvelope = Proto.POGOProtos.Networking.Envelopes.ResponseEnvelope;
 // Google oAuth
 var google = new GoogleOAuth();
 
-// Server URL
-var LOGIN_URL = "https://sso.pokemon.com/sso/login?service=https%3A%2F%2Fsso.pokemon.com%2Fsso%2Foauth2.0%2FcallbackAuthorize";
-var LOGIN_OAUTH = "https://sso.pokemon.com/sso/oauth2.0/accessToken";
-var API_URL = "https://pgorelease.nianticlabs.com/plfe/rpc";
-var ANDROID_ID = "9774d56d682e549c";
-var REQ_HEADERS = {'User-Agent' : 'Niantic App'};
-var OAUTH_SERVICE = 'audience:server:client_id:848232511240-7so421jotr2609rmqakceuu1luuq0ptb.apps.googleusercontent.com';
-var APP = 'com.nianticlabs.pokemongo';
-var CLIENT_SIG = '321187995bc7cdc2b5fc91b11a96e2baa8602c62';
-request = request.defaults({jar: request.jar()}); // For some reason this shit is needed to log in.
+// Configuration
+request = request.defaults({jar: request.jar()});
 
-function api_req(trainerObj, req, callback) {
+/**
+* Performs a call to the Niantic servers
+*/
+function api_req(trainerObj, requestType, callback, responseType) {
   // Pre-login this will print 'undefined' because the username isn't known until post-login
   console.log('[i] Performing api request with trainer : '+trainerObj.username);
   var auth = new RequestEnvelope.AuthInfo({
@@ -44,7 +38,7 @@ function api_req(trainerObj, req, callback) {
   var f_req = new RequestEnvelope({
     status_code: 2,
     request_id: config.REQUEST_ID,
-    requests: req,
+    requests: requestType,
     latitude: parseFloat(trainerObj.location.latitude),
     longitude: parseFloat(trainerObj.location.longitude),
     altitude: parseFloat(trainerObj.location.altitude),
@@ -52,21 +46,17 @@ function api_req(trainerObj, req, callback) {
     unknown12: 989
   });
 
-  var protoMsg = f_req.encode().toBuffer();
-
   var options = {
-    url: trainerObj.login.apiEndpoint ? trainerObj.login.apiEndpoint : API_URL,
-    body: protoMsg,
+    url: trainerObj.login.apiEndpoint ? trainerObj.login.apiEndpoint : config.API_URL,
+    body: f_req.encode().toBuffer(),
     encoding: null,
-    headers: REQ_HEADERS
+    headers: config.REQ_HEADERS
   }
 
   request.post(options, function(error, res, body) {
     if (res === undefined || body === undefined) {
-      console.warn('[!] Pokémon Go server is unreachable. Might be offline.');
-      return callback(new Error('Pokémon Go server is unreachable.'))
+      return callback(new Error('Pokémon Go server is unreachable. Might be offline'));
     } else if (error) {
-      console.log(error);
       return callback(error)
     }
 
@@ -79,15 +69,29 @@ function api_req(trainerObj, req, callback) {
       }
     }
 
-    if (response) {
+    /**
+    * Certain requests require decoding the response
+    * Example : Fetching a Trainer profile requires decoding.
+    *           Requesting authorization does not require decoding.
+    */
+    if (responseType) {
+      if (response && response.returns && response.returns[0]) {
+        var decodedResponse = responseType.decode(response.returns[0]);
+        return callback(null, decodedResponse);
+      } else {
+        console.log("[!] Empty response. Retrying api request.")
+        api_req(trainerObj, requestType, callback, responseType);
+      }
+    } else if (response) {
       return callback(null, response);
     } else {
-      console.log("[!] Something went wrong. Retrying api request.")
-      api_req(trainerObj, req, callback);
+      console.log("[!] Empty response. Retrying api request.")
+      api_req(trainerObj, requestType, callback, responseType);
     }
   });
 }
 
+// Export
 module.exports = {
   // Protocol Buffers
   RequestNetwork : RequestNetwork,
@@ -167,5 +171,4 @@ module.exports = {
       return callback(null, inventoryObj);
     });
   }
-  // End getTrainerInventory() function
 }
