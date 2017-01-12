@@ -3,7 +3,6 @@
 var config = require('./config.js');
 var request = require('request');
 var protobuf = require('protobufjs');
-var GoogleOAuth = require('gpsoauthnode');
 
 // Protocol Buffer
 var builder = protobuf.loadProtoFile('POGOProtos.proto');
@@ -18,14 +17,15 @@ var ResponseNetwork = Proto.POGOProtos.Networking.Responses;
 var RequestEnvelope = Proto.POGOProtos.Networking.Envelopes.RequestEnvelope;
 var ResponseEnvelope = Proto.POGOProtos.Networking.Envelopes.ResponseEnvelope;
 
-// Google oAuth
-var google = new GoogleOAuth();
-
 // Configuration
 request = request.defaults({jar: request.jar()});
 
 /**
 * Performs a call to the Niantic servers
+* @param Trainer {trainerObj}
+* @param RequestNetwork.Request(x) {requestType} , Protobuf build
+* @param callback(Error error, Object response)
+* @param ResponseNetwork {responseType} , Decode Protobuf build. OPTIONAL
 */
 function api_req(trainerObj, requestType, callback, responseType) {
   // Pre-login this will print 'undefined' because the username isn't known until post-login
@@ -98,77 +98,5 @@ module.exports = {
   ResponseNetwork : ResponseNetwork,
   RequestEnvelope : RequestEnvelope,
   ResponseEnvelope : ResponseEnvelope,
-  api_req : api_req,
-
-  getTrainerInventory: function(trainerObj, callback) {
-    var req = new RequestNetwork.Request(4);
-      // console.log(req);
-
-    api_req(trainerObj, req, function(error, response) {
-      if (error) {
-        return callback(error);
-      } else if (!response || !response.returns || !response.returns[0]) {
-        console.log(response)
-        return callback('[#] No results');
-      }
-
-      var data = ResponseNetwork.GetInventoryResponse.decode(response.returns[0]);
-
-      var inventoryObj = {
-        applied_items: [],
-        candies: [],
-        egg_incubators: [],
-        inventory_upgrades: [],
-        items: [],
-        player_currency: [],
-        player_stats: [],
-        pokedex_entry: [],
-        pokemon_data: []
-        // raw: data
-      }
-
-      for (var index in data.inventory_delta.inventory_items) {
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.applied_items != null) {
-          inventoryObj.applied_items.push(data.inventory_delta.inventory_items[index].inventory_item_data.applied_items);
-        }
-
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.candy != null) {
-          inventoryObj.candies.push(data.inventory_delta.inventory_items[index].inventory_item_data.candy);
-        }
-
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.egg_incubators != null) {
-          for (var incubator in data.inventory_delta.inventory_items[index].inventory_item_data.egg_incubators.egg_incubator) {
-            inventoryObj.egg_incubators.push(incubator);
-          }
-        }
-
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.inventory_upgrades != null) {
-          inventoryObj.inventory_upgrades.push(data.inventory_delta.inventory_items[index].inventory_item_data.inventory_upgrades);
-        }
-
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.item != null) {
-          inventoryObj.items.push(data.inventory_delta.inventory_items[index].inventory_item_data.item);
-        }
-
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.player_currency != null) {
-          inventoryObj.player_currency.push(data.inventory_delta.inventory_items[index].inventory_item_data.player_currency);
-        }
-
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.player_stats != null) {
-          inventoryObj.player_stats.push(data.inventory_delta.inventory_items[index].inventory_item_data.player_stats);
-        }
-
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.pokedex_entry != null) {
-          inventoryObj.pokedex_entry.push(data.inventory_delta.inventory_items[index].inventory_item_data.pokedex_entry);
-        }
-
-        if (data.inventory_delta.inventory_items[index].inventory_item_data.pokemon_data != null) {
-          inventoryObj.pokemon_data.push(data.inventory_delta.inventory_items[index].inventory_item_data.pokemon_data);
-        }
-      }
-
-      console.log(inventoryObj);
-      return callback(null, inventoryObj);
-    });
-  }
+  api_req : api_req
 }

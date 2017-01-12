@@ -7,10 +7,13 @@ var protobuf = require('protobufjs');     // Decoding responses using .proto
 var GoogleOAuth = require('gpsoauthnode');// Google authentication
 var Long = require('long')                // Long for date timestamps
 var trainerRepo = require(path.resolve(__dirname+'/../repositories/trainer.repository.js'))
+var pokemonRepo = require(path.resolve(__dirname+'/../repositories/pokemon.repository.js'))
 var badgeRepo = require(path.resolve(__dirname+'/../repositories/badge.repository.js'))
 
 // Google oAuth
-var google = new GoogleOAuth();
+var google = new GoogleOAuth
+
+// Configuration
 request = request.defaults({jar: request.jar()}); // For some reason this shit is needed to log in.
 
 /**
@@ -18,17 +21,14 @@ request = request.defaults({jar: request.jar()}); // For some reason this shit i
 * from the handshake request and character credentials given by the user.
 * @param String err, errors from the request function
 * @param String response, response from the request function
-* @param Object body, body from the request function
-* @param Object credentials, contains data equired for authentication
-* @param Function callback, post login & error handling function
+* @param Object {body} , body from the request function
+* @param Object {credentials} , contains data equired for authentication
+* @param Function callback(Error error, Trainer trainerObj), post login & error handling function
 */
 function ptcHandshakeCallback(err, response, body, credentials, callback) {
+  if (err) {return callback(err);}
+
   var data;
-
-  if (err) {
-    return callback(err);
-  }
-
   try {
     // FIXME This fucks up after logging in for a second time.
     data = JSON.parse(body);
@@ -77,8 +77,8 @@ function ptcHandshakeCallback(err, response, body, credentials, callback) {
 
 /**
 * Does a followup request to obtain the API token from Niantic's servers.
-* @param Object authObjects, contains the ticket
-* @param Object credentials, contains data equired for authentication
+* @param Object {authObjects} , contains the ticket
+* @param Object {credentials} , contains data equired for authentication
 * @param Function callback, post login & error handling function
 */
 function ptcLoginCallback(authObjects, credentials, callback) {
@@ -112,9 +112,9 @@ function ptcLoginCallback(authObjects, credentials, callback) {
 /**
 * Get the requests API endpoint for a specific account and update Trainer info
 * such as profile, inventory, badges and pokemon team.
-* @param Object authObjects, contains the ticket & token
-* @param Object credentials, contains data equired for authentication
-* @param Function callback, post login & error handling function
+* @param Object {authObjects} , contains the ticket & token
+* @param Object {credentials} , contains data equired for authentication
+* @param Function callback(Error error, Traienr trainerObj), post login & error handling function
 */
 function postTokenCallback(authObjects, credentials, callback) {
   var trainerObj = {
@@ -139,13 +139,79 @@ function postTokenCallback(authObjects, credentials, callback) {
       console.log("[i] Authentication process complete.");
 
       getTrainerProfile(trainerObj, function(error, badges) {
-        if (badges)
+        if (error)
+          console.log('[!] Error fetching trainer profile :'+error);
+        else if (badges)
           storeTrainerProfile(trainerObj, badges);
         else
           console.log('[!] No badges returned from Niantic server')
-      }); // getTrainerProfile
+      });
 
-      // getTrainerInventory()
+      getTrainerInventory(trainerObj, function(error, inventory) {
+        if (error) {
+          console.log('[!] Error fetching inventory :'+error);
+        } else if (inventory) {
+          console.log('[i] Inventory received.');
+          var original_timestamp = new Date(
+            new Long(
+              inventory.inventory_delta.original_timestamp_ms.low,
+              inventory.inventory_delta.original_timestamp_ms.high,
+              inventory.inventory_delta.original_timestamp_ms.unsigned
+          ));
+
+          var team = [],
+              items = [],
+              pokedex = [],
+              upgrades = [],
+              incubators = [],
+              candy = [],
+              stats = {};
+
+          var new_timestamp = new Date(
+            new Long(
+              inventory.inventory_delta.new_timestamp_ms.low,
+              inventory.inventory_delta.new_timestamp_ms.high,
+              inventory.inventory_delta.new_timestamp_ms.unsigned
+          ));
+          console.log('[i] original_timestamp_ms : '+original_timestamp);
+          console.log('[i] new_timestamp_ms : '+new_timestamp);
+          console.log('[i] inventory items : ');
+          inventory = inventory.inventory_delta.inventory_items;
+          for (var index = 0; index < inventory.length; index++) {
+            if (inventory[index].inventory_item_data.item)
+              items.push(inventory[index].inventory_item_data.item);
+            else if (inventory[index].inventory_item_data.player_stats)
+              stats = inventory[index].inventory_item_data.player_stats;
+            else if (inventory[index].inventory_item_data.candy)
+              candy.push(inventory[index].inventory_item_data.candy);
+            else if (inventory[index].inventory_item_data.egg_incubators)
+              incubators.push(inventory[index].inventory_item_data.egg_incubators);
+            else if (inventory[index].inventory_item_data.pokedex_entry)
+              pokedex.push(inventory[index].inventory_item_data.pokedex_entry);
+            else if (inventory[index].inventory_item_data.inventory_upgrades)
+              upgrades.push(inventory[index].inventory_item_data.inventory_upgrades);
+            else if (inventory[index].inventory_item_data.pokemon_data)
+              team.push(inventory[index].inventory_item_data.pokemon_data);
+          }
+          console.log('[i] team       : '+team.length);
+          console.log('[i] items      : '+items.length);
+          console.log('[i] pokedex    : '+pokedex.length);
+          console.log('[i] upgrades   : '+upgrades.length);
+          console.log('[i] incubators : '+incubators.length);
+          console.log('[i] candy      : '+candy.length);
+
+          storePokemonTeam(trainerObj, team);
+          // storeInventoryItems(trainerObj, items);
+          // storePokedex(trainerObj, pokedex);
+          // storeInventoryUpgrades(trainerObj, upgrades);
+          // storeEggIncubators(trainerObj, incubators);
+          // storeCandy(trainerObj, candy);
+          console.log('[i] inventory count : ['+inventory.length+']');
+        } else {
+          console.log('[!] No inventory received')
+        }
+      });
+
       // getTrainerPokemon()
 
       storeTrainerData(trainerObj, function(error, newTrainerObj) {
@@ -159,7 +225,7 @@ function postTokenCallback(authObjects, credentials, callback) {
 * Parses the Niantic server response statistics into a Trainer object that
 * our local database and application understands.
 * @param Trainer {trainerObj}
-* @param {statistics}
+* @param Object {statistics}
 * @return Trainer {trainerObj}
 */
 function parseTrainerData(trainerObj, statistics) {
@@ -203,8 +269,8 @@ function parseTrainerData(trainerObj, statistics) {
 /**
 * Searches for existing badges based on Trainer's username and decides to
 * create a new database entry or update an existing one.
-* @param Trainer trainerObj, containing the old trainer statistics but with new authorization values
-* @param {badges}, containing updated trainer badges
+* @param Trainer {trainerObj} , containing the old trainer statistics but with new authorization values
+* @param Object {badges}, containing updated trainer badges
 */
 function storeTrainerProfile(trainerObj, badges) {
   badgeRepo.findByUsername(trainerObj.username, function(error, oldBadges) {
@@ -224,8 +290,8 @@ function storeTrainerProfile(trainerObj, badges) {
 /**
 * Searches for an existing trainer and decides to create a new database entry
 * or update an existing one.
-* @param Trainer trainerObj, containing the old trainer statistics but with new authorization values
-* @param {statistics}, containing new trainer statistics
+* @param Trainer {trainerObj} , containing the old trainer statistics but with new authorization values
+* @param Object {statistics}, containing new trainer statistics
 * @param callback(error, obj) return function
 * @return callback(Error error, Trainer trainerObj)
 */
@@ -244,6 +310,85 @@ function storeTrainerData(trainerObj, callback) {
 }
 
 /**
+* Parse Pokemon objects from Niantic's server to make them compatible
+* with the database.
+* @param Pokemon[] {team} (from server, uncompatible)
+* @return Pokemon[] {team} (model like, compatible)
+*/
+function parsePokemonTeam(team) {
+  for(var i = 0; i < team.length; i++) {
+    var pokemon = {
+      id : new Long(
+        team[i].id.low,
+        team[i].id.high,
+        team[i].id.unsigned
+      ),
+      pokemon_id : team[i].pokemon_id,
+    	cp: team[i].cp,
+    	stamina:  team[i].stamina,
+    	stamina_max: team[i].stamina_max,
+    	move_1: team[i].move_1,
+    	move_2: team[i].move_2,
+    	deployed_fort_id: team[i].deployed_fort_id,
+    	is_egg: team[i].is_egg,
+    	egg_km_walked_target: team[i].egg_km_walked_target,
+    	egg_km_walked_start: team[i].egg_km_walked_start,
+    	origin: team[i].origin,
+    	height_m: team[i].height_m,
+    	weight_kg: team[i].weight_kg,
+    	individual_attack: team[i].individual_attack,
+    	individual_defense: team[i].individual_defense,
+    	individual_stamina: team[i].individual_stamina,
+    	cp_multiplier: team[i].cp_multiplier,
+    	pokeball: team[i].pokeball,
+    	captured_cell_id: new Long(
+        team[i].captured_cell_id.low,
+        team[i].captured_cell_id.high,
+        team[i].captured_cell_id.unsigned
+      ),
+    	battles_attacked: team[i].battles_attacked,
+    	battles_defended: team[i].battles_defended,
+    	egg_incubator_id: team[i].egg_incubator_id,
+    	creation_time_ms: new Long(
+        team[i].creation_time_ms.low,
+        team[i].creation_time_ms.high,
+        team[i].creation_time_ms.unsigned
+      ),
+    	num_upgrades: team[i].num_upgrades,
+    	additional_cp_multiplier: team[i].additional_cp_multiplier,
+    	favorite: team[i].favorite,
+    	nickname: team[i].nickname,
+    	from_fort: team[i].from_fort
+    }
+    team[i] = pokemon;
+  }
+  return team;
+}
+
+/**
+*
+* @param Trainer trainerObj
+* @param Pokemon[] team
+*/
+function storePokemonTeam(trainerObj, team) {
+  team = parsePokemonTeam(team);
+  pokemonRepo.findPokemonTeam(trainerObj.username, function(error, oldTeam) {
+    if (error) {return callback(error);}
+    else if (oldTeam) {
+      pokemonRepo.updatePokemonTeam(trainerObj.username, team, function(error, newTeam) {
+        if (!error)
+          console.log('[i] Updated pokemon team of trainer : '+trainerObj.username);
+      });
+    } else {
+      pokemonRepo.createPokemonTeam(trainerObj.username, team, function(error, newTeam) {
+        if (!error)
+          console.log('[i] Created pokemon team for trainer : '+trainerObj.username);
+      })
+    }
+  });
+}
+
+/**
 * Fetches a Trainer's badges from the Niantic servers and stores them locally.
 * @param Trainer {trainerObj} , required for authentication.
 * @param callback(error, obj) , return function.
@@ -255,7 +400,7 @@ function getTrainerProfile(trainerObj, callback) {
     if (error) {
       return callback(error);
     } else if (!badges) {
-      return callback(new Error('No data received.'));
+      return callback(new Error('No badges received.'));
     } else {
       console.log('[i] Badges fetched!');
       return callback(null, badges);
@@ -276,13 +421,35 @@ function getTrainerData(trainerObj, callback) {
     if (error) {
       return callback(error);
     } else if (!statistics) {
-      return callback(new Error('No data received.'));
+      return callback(new Error('No statistics received.'));
     } else {
       return callback(null, statistics.player_data);
     }
   },CustomAPI.ResponseNetwork.GetPlayerResponse);
 }
 
+
+function getTrainerInventory(trainerObj, callback) {
+  var requestType = new CustomAPI.RequestNetwork.Request(4);
+  CustomAPI.api_req(trainerObj, requestType, function(error, inventory) {
+    if (error) {
+      return callback(error);
+    } else if (!inventory) {
+      return callback(new Error('No inventory received.'));
+    }
+
+    // parseInventory();
+
+    return callback(null, inventory);
+  }, CustomAPI.ResponseNetwork.GetInventoryResponse);
+}
+
+/**
+* Updates an existing Trainer object in the database based on Trainer.username
+* @param Trainer {trainerObj} , gets stored into the database
+* @param function callback(error, trainerObj) , return function
+* @return callback(Error error, Trainer newTrainerObj)
+*/
 function updateTrainer(trainerObj, callback) {
   trainerRepo.updateTrainer(trainerObj, function(error, newTrainer) {
     if (error) {callback(error, null); return;}
@@ -290,18 +457,24 @@ function updateTrainer(trainerObj, callback) {
   });
 }
 
+/**
+* Creates a new Trainer object in the database
+* @param Trainer {trainerObj} , gets stored into the database
+* @param function callback(error, trainerObj) , return function
+* @return callback(Error error, Trainer newTrainerObj)
+*/
 function createTrainer(trainerObj, callback) {
   trainerRepo.createTrainer(trainerObj, function(error, newTrainer) {
-    if (error) {callback(error, null); return;}
-    callback(null, newTrainer);
+    if (error) {return callback(error);}
+    return callback(null, newTrainer);
   });
 }
 
 /**
 * Fetches an endpoint for future requests from the Niantic servers
-* @param Object trainerObj
-* @param Function callback, post login & error handling function
-* @return Function callback, execution
+* @param Trainer {trainerObj}
+* @param Function callback(error, data), post login & error handling function
+* @return Function callback(Error error, Trainer trainerObj), execution
 */
 function getApiEndpoint(trainerObj, callback) {
   var req = [
@@ -328,58 +501,74 @@ function getApiEndpoint(trainerObj, callback) {
   });
 }
 
+/**
+* Log in on the Niantic servers using a PTC account
+* Fetch unique login identification using initial handshake request
+* @param Object {credentials} , String username, String password, String provider, Float latitude, Float longitude, Float altitude
+* @param callback(Error error, Trainer trainerObj) , return function.
+* @return callback(Error error, Trainer trainerObj) , error and response handler
+*/
+function pokemonClub(credentials, callback) {
+ var options = {
+   url: config.LOGIN_URL,
+   headers: config.REQ_HEADERS
+ };
 
+ console.log('[!] First request : Handshake')
+ request.get(options, function(err, response, body) {
+   ptcHandshakeCallback(err, response, body, credentials, callback);
+ });
+}
+
+/**
+* Logs into the Google server to obtain a master key which in return works as
+* a token for the Niantic API server.
+* CAUTION: DOES NOT WORK WITH TWO-FACTOR AUTHENTICATION. Requires a Google ASP
+* ASPs can be generated here : https://security.google.com/settings/security/apppasswords
+* @param Object {credentials} , String Gmail, String password, String provider, Float latitude, Float longitude, Float altitude
+* @param callback(Error error, Trainer trainerObj) , return function.
+* @return callback(Error error, Trainer trainerObj) , error and response handler
+*/
+function googleOAuth(credentials, callback) {
+    var authObjects = {
+      ticket : undefined,
+      token : undefined,
+      endpoint : undefined
+    }
+  google.login(credentials.username, credentials.password, config.ANDROID_ID, function(error, data) {
+    if (error) {
+      console.log('[#] Error logging into Google services')
+      return callback(error);
+    } else if (data) {
+      google.oauth(credentials.username, data.masterToken, data.androidId, config.OAUTH_SERVICE, config.APP, config.CLIENT_SIG, function(error, data) {
+        if (error) {
+          console.log('[#] Error retrieving oauth data from Google services')
+          return callback(error);
+        }
+        console.log('[!] Google login succesfull');
+        authObjects.token = data.Auth;
+        postTokenCallback(authObjects, credentials, callback);
+      })
+    }
+  })
+}
+
+/**
+* Retuns all locally stored trainers that contain authentication data.
+* This indicates that they have been logged in since the laest server startup.
+* @param String username , lookup ID
+* @param callback(Error error, Trainer[] trainers)
+* @return callback(Error error, Trainer[] trainers)
+*/
 function getAvailableTrainers(username, callback) {
-  trainerRepo.findOnlineTrainers(username, function(trainers) {
+  trainerRepo.findOnlineTrainers(username, function(error, trainers) {
     callback(trainers);
   });
 }
 
+// Exports
 module.exports = {
-  /**
-  * Log in on the Niantic servers using a PTC account
-  * Fetch unique login identification using initial handshake request
-  * @param String username
-  * @param String password
-  * @param Function callback , post login and error handling function
-  */
-  pokemonClub : function(credentials, callback) {
-    var options = {
-      url: config.LOGIN_URL,
-      headers: config.REQ_HEADERS
-    };
-
-    console.log('[!] First request : Handshake')
-    request.get(options, function(err, response, body) {
-      ptcHandshakeCallback(err, response, body, credentials, callback);
-    });
-  },
-
-  /**
-  *
-  */
-  googleOAuth: function(credentials, callback) {
-      var authObjects = {
-        ticket : undefined,
-        token : undefined,
-        endpoint : undefined
-      }
-    google.login(credentials.username, credentials.password, config.ANDROID_ID, function(error, data) {
-      if (error) {
-        console.log('[#] Error logging into Google services')
-        return callback(error);
-      } else if (data) {
-        google.oauth(credentials.username, data.masterToken, data.androidId, config.OAUTH_SERVICE, config.APP, config.CLIENT_SIG, function(error, data) {
-          if (error) {
-            console.log('[#] Error retrieving oauth data from Google services')
-            return callback(error);
-          }
-          console.log('[!] Google login succesfull');
-          authObjects.token = data.Auth;
-          postTokenCallback(authObjects, credentials, callback);
-        })
-      }
-    })
-  },
+  pokemonClub : pokemonClub,
+  googleOAuth : googleOAuth,
   getAvailableTrainers : getAvailableTrainers
 }
