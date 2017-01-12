@@ -58,15 +58,11 @@ function updateBadge(username, badge, callback) {
   Badges.update(
     {'owner' : username, 'badges.badge_type':badge.badge_type},
     {'$set' : badge},
-    {
-      runValidators:true,
-      new:true
-    },
+    {runValidators:true, new:true},
     function(error, newBadges) {
-      if (error) {
-        console.log('[!] Error updating badge');
-        callback(error, null);
-      }
+      if (error) console.log('[!] Error updating badge');
+      else console.log('[i] Updated badge for : '+username+', item : '+badge.badge_type);
+        callback(error, newBadges);
     }
   );
 }

@@ -6,9 +6,10 @@ var request = require('request');         // HTTP requests
 var protobuf = require('protobufjs');     // Decoding responses using .proto
 var GoogleOAuth = require('gpsoauthnode');// Google authentication
 var Long = require('long')                // Long for date timestamps
-var trainerRepo = require(path.resolve(__dirname+'/../repositories/trainer.repository.js'))
-var pokemonRepo = require(path.resolve(__dirname+'/../repositories/pokemon.repository.js'))
-var badgeRepo = require(path.resolve(__dirname+'/../repositories/badge.repository.js'))
+var trainerRepo = require(path.resolve(__dirname+'/../repositories/trainer.repository.js'));
+var pokemonRepo = require(path.resolve(__dirname+'/../repositories/pokemon.repository.js'));
+var badgeRepo = require(path.resolve(__dirname+'/../repositories/badge.repository.js'));
+var inventoryRepo = require(path.resolve(__dirname+'/../repositories/inventory.repository.js'));
 
 // Google oAuth
 var google = new GoogleOAuth
@@ -178,7 +179,7 @@ function postTokenCallback(authObjects, credentials, callback) {
           console.log('[i] inventory items : ');
           inventory = inventory.inventory_delta.inventory_items;
           for (var index = 0; index < inventory.length; index++) {
-            if (inventory[index].inventory_item_data.item)
+            if (inventory[index].inventory_item_data.item && inventory[index].inventory_item_data.item.item_id)
               items.push(inventory[index].inventory_item_data.item);
             else if (inventory[index].inventory_item_data.player_stats)
               stats = inventory[index].inventory_item_data.player_stats;
@@ -201,7 +202,7 @@ function postTokenCallback(authObjects, credentials, callback) {
           console.log('[i] candy      : '+candy.length);
 
           storePokemonTeam(trainerObj, team);
-          // storeInventoryItems(trainerObj, items);
+          storeInventoryItems(trainerObj, items);
           // storePokedex(trainerObj, pokedex);
           // storeInventoryUpgrades(trainerObj, upgrades);
           // storeEggIncubators(trainerObj, incubators);
@@ -366,9 +367,9 @@ function parsePokemonTeam(team) {
 }
 
 /**
-*
-* @param Trainer trainerObj
-* @param Pokemon[] team
+* Stores pokemon fetched from Niantic into the local database
+* @param Trainer {trainerObj}
+* @param Pokemon[] team, array of Pokemons.Pokemon child objects
 */
 function storePokemonTeam(trainerObj, team) {
   team = parsePokemonTeam(team);
@@ -386,6 +387,21 @@ function storePokemonTeam(trainerObj, team) {
       })
     }
   });
+}
+
+/**
+* Stores items fetched from Niantic in the local database
+* @param Trainer {trainerObj}
+* @param Item[] items , array of Inventory.Item child objects
+*/
+function storeInventoryItems(trainerObj, items) {
+  inventoryRepo.findInventory(trainerObj.username, function(error, oldInventory) {
+    if (oldInventory) {
+      inventoryRepo.updateInventory(trainerObj.username, items, function(error, newInventory) {});
+    } else {
+      inventoryRepo.createInventory(trainerObj.username, items, function(error, newInventory){});
+    }
+  })
 }
 
 /**

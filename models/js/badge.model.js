@@ -16,7 +16,6 @@ var BadgesSchema = new Schema({
   badges: [Badge] // Array of Badge objects
 });
 
-
 Badges = mongoose.model('badges', BadgesSchema);
 
 module.exports.Badges = Badges;

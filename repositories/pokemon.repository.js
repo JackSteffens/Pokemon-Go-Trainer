@@ -1,5 +1,5 @@
 // Model
-var path = require('path')
+var path = require('path');
 var Pokemon = require(path.resolve(__dirname+'/../models/js/pokemon.model.js')).Pokemons;
 
 /**
