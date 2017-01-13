@@ -9,8 +9,14 @@ var trainerService = require('../services/trainer.service.js');
 * @return [{Trainer}]
 */
 exports.getTrainer = function(req, res) {
-  trainerService.getAvailableTrainers(null, function(trainers) {
+  trainerService.getAvailableTrainers(null, function(error, trainers) {
+    if (error) {
+      res.status('400');
+      res.send(err);
+      return;
+    }
     res.send(trainers);
+    return;
   })
 };
 

@@ -12,10 +12,8 @@ function findByUsername(username, callback) {
   Badges.findOne(
     {'owner':username},
     function (error, badges) {
-      if (error)
-        console.log('[!] Error fetching badges');
-      else if (badges)
-        console.log('[i] Found badges for : '+username);
+      if (error)console.log('[!] Error fetching badges');
+      else if (badges) console.log('[i] Found badges for : '+username);
       return callback(error, badges);
     }
   );
@@ -31,16 +29,11 @@ function findByUsername(username, callback) {
 function updateBadges(username, badges, callback) {
   Badges.findOneAndUpdate(
     {'owner':username},
-    badges,
-    {
-      runValidators:true,
-      new:true
-    },
+    {'badges':badges},
+    {runValidators:true, new:true},
     function(error, newBadges) {
-      if (error)
-        console.log('[!] Error updating badges');
-      else
-        console.log('[i] Updates bades for : '+username);
+      if (error) console.log('[!] Error updating badges');
+      else if (newBadges) console.log('[i] Updates bades for : '+username);
       return callback(error, newBadges);
     }
   );
@@ -61,8 +54,8 @@ function updateBadge(username, badge, callback) {
     {runValidators:true, new:true},
     function(error, newBadges) {
       if (error) console.log('[!] Error updating badge');
-      else console.log('[i] Updated badge for : '+username+', item : '+badge.badge_type);
-        callback(error, newBadges);
+      else if (newBadges) console.log('[i] Updated badge for : '+username+', item : '+badge.badge_type);
+      return callback(error, newBadges);
     }
   );
 }
@@ -75,17 +68,14 @@ function updateBadge(username, badge, callback) {
 * @return callback(Error error, Badges newBadges)
 */
 function createBadges(username, badges, callback) {
-  Badges.create({
-    owner:username,
-    badges:badges
-  },
-  function(error, newBadges) {
-    if (error)
-      console.log('[!] Error creating badges');
-    else
-      console.log('[i] Created badges for : '+username);
-    return callback(error, newBadges);
-  });
+  Badges.create(
+    {'owner':username, 'badges':badges},
+    function(error, newBadges) {
+      if (error) console.log('[!] Error creating badges');
+      else if (newBadges) console.log('[i] Created badges for : '+username);
+      return callback(error, newBadges);
+    }
+  );
 }
 
 // Exports

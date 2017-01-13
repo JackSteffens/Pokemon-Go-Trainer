@@ -9,22 +9,27 @@ var Inventory = require(path.resolve(__dirname+'/../models/js/inventory.model.js
 * @return callback(Error error, Inventory inventory)
 */
 function findInventory(username, callback) {
-  Inventory.findOne({'owner':username}, function(error, inventory) {
-    return callback(error, inventory);
-  });
+  Inventory.findOne(
+    {'owner':username},
+    function(error, inventory) {
+      if (error) console.log('[!] Error fetching inventory \n'+error);
+      else if (inventory) console.log('[i] Found inventory for '+username);
+      return callback(error, inventory);
+    }
+  );
 }
 
 /**
 * Updates the entire inventory of the given trainer
 * @param String username, unique ID
-* @param Item[] items , Array of Inventory.Item child objects
+* @param Item[] {items} , Array of Inventory.Item child objects
 * @param Function callback(error, inventory)
 * @return callback(Error error, Inventory inventory)
 */
 function updateInventory(username, items, callback) {
   Inventory.findOneAndUpdate(
     {'owner':username},
-    items,
+    {'items':items},
     {runValidators:true, new:true},
     function(error, newInventory) {
       if (error) console.log('[!] Error updating inventory. \n'+error);
@@ -37,7 +42,7 @@ function updateInventory(username, items, callback) {
 /**
 * Updates a single item from the given trainer's inventory
 * @param String username , unique ID
-* @param Item item , Inventory.Item child objecet
+* @param Item {item} , Inventory.Item child objecet
 * @param Function callback(error, inventory)
 * @return callback(Error error, Inventory inventory)
 */
@@ -56,21 +61,20 @@ function updateItem(username, item, callback) {
 
 /**
 * Creates a new inventory for the given trainer
-* @param String username
-* @param Item[] items
+* @param String username , unique identifier
+* @param Item[] {items} , array of Inventory.Item child objects
 * @param Function callback(error, inventory)
 * @return callback(Error error, Inventory inventory)
 */
 function createInventory(username, items, callback) {
-  Inventory.create({
-    'owner':username,
-    'items':items
-  },
-  function(error, newInventory) {
-    if (error) console.log('[!] Error creating inventory. \n'+error);
-    else console.log('[i] Created inventory for : '+username);
-    callback(error, newInventory);
-  });
+  Inventory.create(
+    {'owner':username, 'items':items},
+    function(error, newInventory) {
+      if (error) console.log('[!] Error creating inventory. \n'+error);
+      else console.log('[i] Created inventory for : '+username);
+      callback(error, newInventory);
+    }
+  );
 }
 
 // Exports

@@ -26,5 +26,5 @@ exports.setRequestUrl = function(app) {
   // Web application index
   app.get('/', function(req, res) {
     res.sendFile(__dirname+'/public/res/views/index.html');
-  })
+  });
 }

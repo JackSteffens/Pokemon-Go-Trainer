@@ -35,12 +35,12 @@ var Pokemon = new Schema({
 	from_fort: {type:Number, required:true}    // ??
 });
 
-var PokemonTeamSchema = new Schema({
-  owner: {type:String, required:true, unique:true},          // Ingame username
+var PokemonTeam = new Schema({
+  owner: {type:String, required:true, unique:true},	// Ingame username
   pokemons: [Pokemon] // Array of Pokemon objects
 });
 
-Pokemons = mongoose.model('pokemonteams', PokemonTeamSchema);
+Pokemons = mongoose.model('pokemonteams', PokemonTeam);
 
 module.exports.Pokemons = Pokemons;
-module.exports.Schema = PokemonTeamSchema;
+module.exports.Schema = PokemonTeam;

@@ -6,10 +6,13 @@ var request = require('request');         // HTTP requests
 var protobuf = require('protobufjs');     // Decoding responses using .proto
 var GoogleOAuth = require('gpsoauthnode');// Google authentication
 var Long = require('long')                // Long for date timestamps
+
+// Repositories
 var trainerRepo = require(path.resolve(__dirname+'/../repositories/trainer.repository.js'));
 var pokemonRepo = require(path.resolve(__dirname+'/../repositories/pokemon.repository.js'));
 var badgeRepo = require(path.resolve(__dirname+'/../repositories/badge.repository.js'));
 var inventoryRepo = require(path.resolve(__dirname+'/../repositories/inventory.repository.js'));
+var pokedexRepo = require(path.resolve(__dirname+'/../repositories/pokedex.repository.js'));
 
 // Google oAuth
 var google = new GoogleOAuth
@@ -203,7 +206,7 @@ function postTokenCallback(authObjects, credentials, callback) {
 
           storePokemonTeam(trainerObj, team);
           storeInventoryItems(trainerObj, items);
-          // storePokedex(trainerObj, pokedex);
+          storePokedex(trainerObj, pokedex);
           // storeInventoryUpgrades(trainerObj, upgrades);
           // storeEggIncubators(trainerObj, incubators);
           // storeCandy(trainerObj, candy);
@@ -285,6 +288,18 @@ function storeTrainerProfile(trainerObj, badges) {
         console.log('[i] New badges created. Check database!');
       });
     }
+  });
+}
+
+/**
+* Fetches a trainer's badges from the local database
+* @param String username
+* @param Function callback(error, badges)
+* @return callback(Error error, Badges badgs)
+*/
+function getTrainerProfile(username, callback) {
+  badgeRepo.findByUsername(username, function(error, badges) {
+    return callback(error, badges);
   });
 }
 
@@ -390,6 +405,18 @@ function storePokemonTeam(trainerObj, team) {
 }
 
 /**
+* Fetches a trainer's pokemon team from the local database
+* @param String username
+* @param Function callback(error, pokemons)
+* @return callback(Error error, Pokemons pokemons)
+*/
+function getPokemonTeam(username, callback) {
+  pokemonRepo.findPokemonTeam(username, function(error, pokemons) {
+    return callback(error, pokemons);
+  })
+}
+
+/**
 * Stores items fetched from Niantic in the local database
 * @param Trainer {trainerObj}
 * @param Item[] items , array of Inventory.Item child objects
@@ -402,6 +429,26 @@ function storeInventoryItems(trainerObj, items) {
       inventoryRepo.createInventory(trainerObj.username, items, function(error, newInventory){});
     }
   })
+}
+
+/**
+* Stores a pokedex fetched from Niantic in the local database
+* @param Trainer {trainerObj}
+* @param PokedexEntry[] {pokedex} , array of Pokedex.PokedexEntry child objects
+*/
+function storePokedex(trainerObj, pokedex) {
+  pokedexRepo.findPokedex(trainerObj.username, function(error, oldPokedex) {
+    if (error) return;
+    if (oldPokedex)
+      pokedexRepo.updatePokedex(trainerObj.username, pokedex, function(error, newPokedex) {});
+    else
+      pokedexRepo.createPokedex(trainerObj.username, pokedex, function(error, newPokedex) {});
+  });
+}
+
+
+function getPokedex(username, callback) {
+
 }
 
 /**
@@ -570,6 +617,18 @@ function googleOAuth(credentials, callback) {
 }
 
 /**
+* Fetches one or more users from the local database
+* @param String username. Optional, if NULL then return all trainers.
+* @param Function callback(error, trainers)
+* @return callback(Error error, Trainer[] trainers) , array of Trainer objects.
+*/
+function getTrainer(username, callback) {
+  trainerRepo.findTrainer(username, function(error, trainers) {
+    return callback(error, trainers);
+  })
+}
+
+/**
 * Retuns all locally stored trainers that contain authentication data.
 * This indicates that they have been logged in since the laest server startup.
 * @param String username , lookup ID
@@ -578,7 +637,7 @@ function googleOAuth(credentials, callback) {
 */
 function getAvailableTrainers(username, callback) {
   trainerRepo.findOnlineTrainers(username, function(error, trainers) {
-    callback(trainers);
+    callback(error, trainers);
   });
 }
 
@@ -586,5 +645,6 @@ function getAvailableTrainers(username, callback) {
 module.exports = {
   pokemonClub : pokemonClub,
   googleOAuth : googleOAuth,
-  getAvailableTrainers : getAvailableTrainers
+  getAvailableTrainers : getAvailableTrainers,
+  getTrainer : getTrainer
 }
