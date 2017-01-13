@@ -675,6 +675,10 @@ function getProfile(username, callback) {
   });
 }
 
+function getStatistics(username, callback) {
+  
+}
+
 
 // Exports
 module.exports = {
