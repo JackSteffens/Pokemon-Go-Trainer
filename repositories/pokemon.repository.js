@@ -1,6 +1,7 @@
 // Model
 var path = require('path');
 var Pokemon = require(path.resolve(__dirname+'/../models/js/pokemon.model.js')).Pokemons;
+var colors = require('colors');
 
 /**
 * Fetch Pokemons by Trainer username
@@ -12,7 +13,7 @@ function findPokemonTeam(username, callback) {
   Pokemon.findOne(
     {'owner': username},
     function(error, team) {
-      if (error) console.log('[!] Error fetching pokemon team \n'+error);
+      if (error) console.log(('[!] Error fetching pokemon team \n'+error).red);
       else if (team) console.log('[i] Found pokemon team for : '+username);
       return callback(error, team);
     }
@@ -32,7 +33,7 @@ function updatePokemonTeam(username, team, callback) {
     {'pokemons':team},
     {runValidators:true, new:true},
     function(error, newTeam) {
-      if (error) console.log('[!] Error updating team \n'+error);
+      if (error) console.log(('[!] Error updating team \n'+error).red);
       else if (newTeam) console.log('[i] Updated team for : '+username);
       return callback(error, newTeam);
     }
@@ -50,7 +51,7 @@ function createPokemonTeam(username, team, callback) {
   Pokemon.create(
     {'owner':username, 'pokemons':team},
     function(error, newTeam) {
-      if (error) console.log('[!] Error creating team \n'+error);
+      if (error) console.log(('[!] Error creating team \n'+error).red);
       else console.log('[i] Created team for : '+username);
       return callback(error, newTeam);
     }

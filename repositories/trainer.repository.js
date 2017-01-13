@@ -1,33 +1,33 @@
 // Model
 var path = require('path')
 var Trainer = require(path.resolve(__dirname+'/../models/js/trainer.model.js')).Trainer;
+var colors = require('colors');
 
 /**
-* Find a trainer by username
+* Find a trainer by username or all trainers
 * @param String username
 * @param Function callback(error, trainer)
 * @return callback(Error error, Trainer trainer)
 */
-function findTrainer(username, callback) {
-  Trainer.findOne(
-    {username: username},
-    function(error, trainer) {
-      if (error) console.log('[!] Error fetching trainer \n'+error);
-      else if (trainer) console.log('[i] Found trainer : '+trainer.username);
-      return callback(error, trainer);
-    }
-  );
-}
-
-/**
-* Fetches all stored Trainers from the local database
-* @param Function callback(error, trainers)
-* @return callback(Error error, Trainer[] trainers) , array of Traier objects
-*/
-function findAllTrainers(callback) {
-  Trainer.find({}, function(error, trainers) {
-    callback(error, trainers);
-  });
+function getTrainer(username, callback) {
+  if (username) {
+    Trainer.findOne(
+      {'username':username},
+      function(error, trainer) {
+        if (error) console.log(('[!] Error fetching trainer \n'+error).red);
+        else if (trainer) console.log('[i] Found trainer : '+username);
+        return callback(error, trainer);
+      }
+    );
+  } else {
+    Trainer.find({},
+      function(error, trainers) {
+        if (error) console.log(('[!] Error fetching trainers \n'+error).red);
+        else if (trainers) console.log('[i] Found trainers : '+trainers.length);
+        return callback(error, trainers);
+      }
+    );
+  }
 }
 
 /**
@@ -36,22 +36,22 @@ function findAllTrainers(callback) {
 * @param Function callback(error, trainers)
 * @return callback(Error error, Trainer[] trainers) , array of Trainer objects
 */
-function findOnlineTrainers(username, callback) {
+function getOnlineTrainers(username, callback) {
   if (username) {
     Trainer.findOne(
       {'login.accessToken': {$ne : null}, 'username':username},
       function(error, trainer) {
-        if (error) console.log('[!] Error fetching single online trainer \n'+error);
+        if (error) console.log(('[!] Error fetching single online trainer \n'+error).red);
         else if (trainer) console.log('[i] Found online trainer : '+username);
-        return callback(error, trainers);
+        return callback(error, trainer);
       }
     );
   } else {
     Trainer.find(
       {'login.accessToken': {$ne : null}},
       function(error, trainers) {
-        if (error) console.log('[!] Error fetching online trainers \n'+error);
-        else if (trainers) console.log('[i] Found online trainers');
+        if (error) console.log(('[!] Error fetching online trainers \n'+error).red);
+        else if (trainers) console.log('[i] Found online trainers : '+trainers.length);
         return callback(error, trainers);
       }
     );
@@ -70,7 +70,7 @@ function updateTrainer(trainer, callback) {
     trainer,
     {runValidators:true, new:true},
     function(error, newTrainer) {
-      if (error) console.log('[!] Error updating trainer')
+      if (error) console.log(('[!] Error updating trainer \n'+error).red)
       else console.log('[i] Updated existing trainer : '+newTrainer.username);
       return callback(error, newTrainer);
     });
@@ -85,7 +85,7 @@ function updateTrainer(trainer, callback) {
 function createTrainer(trainer, callback) {
   Trainer.create(trainer,
     function(error, newTrainer) {
-      if (error) console.log('[!] Error creating trainer');
+      if (error) console.log(('[!] Error creating trainer \n'+error).red);
       else console.log('[i] Created new trainer : '+newTrainer.username);
       return callback(error, newTrainer);
     }
@@ -93,9 +93,8 @@ function createTrainer(trainer, callback) {
 }
 
 module.exports = {
-  findTrainer : findTrainer,
-  findAllTrainers : findAllTrainers,
-  findOnlineTrainers : findOnlineTrainers,
+  getTrainer : getTrainer,
+  getOnlineTrainers : getOnlineTrainers,
   updateTrainer : updateTrainer,
   createTrainer : createTrainer
 }

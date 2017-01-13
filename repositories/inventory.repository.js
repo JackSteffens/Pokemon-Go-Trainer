@@ -1,6 +1,7 @@
 // Model
 var path = require('path');
 var Inventory = require(path.resolve(__dirname+'/../models/js/inventory.model.js')).Inventory;
+var colors = require('colors');
 
 /**
 * Fetches the inventory of the given trainer
@@ -12,7 +13,7 @@ function findInventory(username, callback) {
   Inventory.findOne(
     {'owner':username},
     function(error, inventory) {
-      if (error) console.log('[!] Error fetching inventory \n'+error);
+      if (error) console.log(('[!] Error fetching inventory \n'+error).red);
       else if (inventory) console.log('[i] Found inventory for '+username);
       return callback(error, inventory);
     }
@@ -32,7 +33,7 @@ function updateInventory(username, items, callback) {
     {'items':items},
     {runValidators:true, new:true},
     function(error, newInventory) {
-      if (error) console.log('[!] Error updating inventory. \n'+error);
+      if (error) console.log(('[!] Error updating inventory. \n'+error).red);
       else console.log('[i] Updated inventory for : '+username);
       return callback(error, newInventory);
     }
@@ -52,7 +53,7 @@ function updateItem(username, item, callback) {
     {'$set':item},
     {runValidators:true, new:true},
     function(error, newInventory) {
-      if (error) console.log('[!] Error updating Inventory item. \n'+error);
+      if (error) console.log(('[!] Error updating Inventory item. \n'+error).red);
       else console.log('[i] Updated inventory item for : '+username+', item : '+item.item_id);
       callback(error, newInventory);
     }
@@ -70,7 +71,7 @@ function createInventory(username, items, callback) {
   Inventory.create(
     {'owner':username, 'items':items},
     function(error, newInventory) {
-      if (error) console.log('[!] Error creating inventory. \n'+error);
+      if (error) console.log(('[!] Error creating inventory. \n'+error).red);
       else console.log('[i] Created inventory for : '+username);
       callback(error, newInventory);
     }

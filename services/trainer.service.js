@@ -35,7 +35,16 @@ function ptcHandshakeCallback(err, response, body, credentials, callback) {
   var data;
   try {
     // FIXME This fucks up after logging in for a second time.
-    data = JSON.parse(body);
+    // Check if we need to logout externally from Niantic's servers
+
+    // Detect if this is valid JSON
+    if (/^[\],:{}\s]*$/.test(body.replace(/\\["\\\/bfnrtu]/g, '@').
+    replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+    replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+      data = JSON.parse(body);
+    } else {
+      return callback(new Error('Response was not valid JSON. Restart the server.'))
+    }
   }catch(err){
     if (!data) {
       return callback(err);
@@ -136,22 +145,24 @@ function postTokenCallback(authObjects, credentials, callback) {
   }
   getApiEndpoint(trainerObj, function(error, trainerObj) {
     if (error) {return callback(error);}
-
-    getTrainerData(trainerObj, function(error, statistics) {
+    // Fetching base Trainer object
+    fetchTrainerData(trainerObj, function(error, statistics) {
       if (error) {callback(error); return;}
       trainerObj = parseTrainerData(trainerObj, statistics);
       console.log("[i] Authentication process complete.");
 
-      getTrainerProfile(trainerObj, function(error, badges) {
+      // Fetching badges
+      fetchProfile(trainerObj, function(error, badges) {
         if (error)
           console.log('[!] Error fetching trainer profile :'+error);
         else if (badges)
-          storeTrainerProfile(trainerObj, badges);
+          storeProfile(trainerObj, badges.badges);
         else
           console.log('[!] No badges returned from Niantic server')
       });
 
-      getTrainerInventory(trainerObj, function(error, inventory) {
+      // Fetching inventory
+      fetchInventory(trainerObj, function(error, inventory) {
         if (error) {
           console.log('[!] Error fetching inventory :'+error);
         } else if (inventory) {
@@ -215,13 +226,11 @@ function postTokenCallback(authObjects, credentials, callback) {
           console.log('[!] No inventory received')
         }
       });
-
-      // getTrainerPokemon()
-
+      // Storing fetched base Trainer object
       storeTrainerData(trainerObj, function(error, newTrainerObj) {
         callback(error, newTrainerObj);
       });
-    }); // getTrainerData
+    }); // fetchTrainerData
   }); // getApiEndpoint
 }
 
@@ -276,30 +285,14 @@ function parseTrainerData(trainerObj, statistics) {
 * @param Trainer {trainerObj} , containing the old trainer statistics but with new authorization values
 * @param Object {badges}, containing updated trainer badges
 */
-function storeTrainerProfile(trainerObj, badges) {
+function storeProfile(trainerObj, badges) {
   badgeRepo.findByUsername(trainerObj.username, function(error, oldBadges) {
     if (!error) {
       if (oldBadges) // updateBadges(username, badges);
-        badgeRepo.updateBadges(trainerObj.username, badges, function(error, newBadges) {
-          console.log('[i] Existing badges updated. Check database!');
-        });
+        badgeRepo.updateBadges(trainerObj.username, badges, function(error, newBadges) {});
       else
-        badgeRepo.createBadges(trainerObj.username, badges, function(error, newBadges) {
-        console.log('[i] New badges created. Check database!');
-      });
+        badgeRepo.createBadges(trainerObj.username, badges, function(error, newBadges) {});
     }
-  });
-}
-
-/**
-* Fetches a trainer's badges from the local database
-* @param String username
-* @param Function callback(error, badges)
-* @return callback(Error error, Badges badgs)
-*/
-function getTrainerProfile(username, callback) {
-  badgeRepo.findByUsername(username, function(error, badges) {
-    return callback(error, badges);
   });
 }
 
@@ -312,14 +305,12 @@ function getTrainerProfile(username, callback) {
 * @return callback(Error error, Trainer trainerObj)
 */
 function storeTrainerData(trainerObj, callback) {
-  trainerRepo.findTrainer(trainerObj.username, function(error, oldTrainer) {
+  trainerRepo.getTrainer(trainerObj.username, function(error, oldTrainer) {
     if (error) {
       return callback(error);
     } else if (oldTrainer) {
-      console.log("[!] Trainer exists. Updating database")
       return updateTrainer(trainerObj, callback);
     } else {
-      console.log("[!] New trainer. Storing in database")
       return createTrainer(trainerObj, callback);
     }
   });
@@ -391,15 +382,9 @@ function storePokemonTeam(trainerObj, team) {
   pokemonRepo.findPokemonTeam(trainerObj.username, function(error, oldTeam) {
     if (error) {return callback(error);}
     else if (oldTeam) {
-      pokemonRepo.updatePokemonTeam(trainerObj.username, team, function(error, newTeam) {
-        if (!error)
-          console.log('[i] Updated pokemon team of trainer : '+trainerObj.username);
-      });
+      pokemonRepo.updatePokemonTeam(trainerObj.username, team, function(error, newTeam) {});
     } else {
-      pokemonRepo.createPokemonTeam(trainerObj.username, team, function(error, newTeam) {
-        if (!error)
-          console.log('[i] Created pokemon team for trainer : '+trainerObj.username);
-      })
+      pokemonRepo.createPokemonTeam(trainerObj.username, team, function(error, newTeam) {})
     }
   });
 }
@@ -431,6 +416,10 @@ function storeInventoryItems(trainerObj, items) {
   })
 }
 
+function getInventory() {
+
+}
+
 /**
 * Stores a pokedex fetched from Niantic in the local database
 * @param Trainer {trainerObj}
@@ -457,7 +446,7 @@ function getPokedex(username, callback) {
 * @param callback(error, obj) , return function.
 * @return callback(Error error, Badges badgesObj)
 */
-function getTrainerProfile(trainerObj, callback) {
+function fetchProfile(trainerObj, callback) {
   var requestType = new CustomAPI.RequestNetwork.Request(121);
   CustomAPI.api_req(trainerObj, requestType, function apiCallback(error, badges) {
     if (error) {
@@ -478,7 +467,7 @@ function getTrainerProfile(trainerObj, callback) {
 * @param callback(error, obj) , return function.
 * @return callback(Error error, Trainer trainerObj)
 */
-function getTrainerData(trainerObj, callback) {
+function fetchTrainerData(trainerObj, callback) {
   var requestType = new CustomAPI.RequestNetwork.Request(2);
   CustomAPI.api_req(trainerObj, requestType, function(error, statistics) {
     if (error) {
@@ -491,8 +480,13 @@ function getTrainerData(trainerObj, callback) {
   },CustomAPI.ResponseNetwork.GetPlayerResponse);
 }
 
-
-function getTrainerInventory(trainerObj, callback) {
+/**
+* Fetches Trainer inventory from the Niantic servers.
+* @param Trainer {trainerObj} , required for authentication.
+* @param callback(error, inventory) , return function.
+* @return callback(Error error, Inventory inventory)
+*/
+function fetchInventory(trainerObj, callback) {
   var requestType = new CustomAPI.RequestNetwork.Request(4);
   CustomAPI.api_req(trainerObj, requestType, function(error, inventory) {
     if (error) {
@@ -617,13 +611,41 @@ function googleOAuth(credentials, callback) {
 }
 
 /**
+* Logout a user locally. This deletes the login details from the database.
+* login,accessToken & login.apiEndpoint are ereased.
+* TODO Research whether a user should also logout externally (Niantic)
+* @param String username , unique identifier
+* @param Function callback(error, trainer)
+* @return callback(Error error, Trainer trainer) , logged out Trainer with ereased login details
+*/
+function logout(username, callback) {
+  if (!username) return callback(new Error('No username supplied'));
+  getAvailableTrainers(username, function(error, trainer) {
+    if (error) {
+      console.log('[!] Error logging out user '+username);
+      return callback(error);
+    } else if (trainer) {
+      trainer.login.accessToken = null;
+      trainer.login.apiEndpoint = null;
+      updateTrainer(trainer, function(error, newTrainer) {
+        if (error) console.log('[!] Error logging out user '+username);
+        else if (newTrainer) console.log('[i] User logged out : '+username);
+        return callback(error, newTrainer);
+      });
+    } else {
+      return callback(new Error('User '+username+' was not logged in'))
+    }
+  })
+}
+
+/**
 * Fetches one or more users from the local database
 * @param String username. Optional, if NULL then return all trainers.
 * @param Function callback(error, trainers)
 * @return callback(Error error, Trainer[] trainers) , array of Trainer objects.
 */
 function getTrainer(username, callback) {
-  trainerRepo.findTrainer(username, function(error, trainers) {
+  trainerRepo.getTrainer(username, function(error, trainers) {
     return callback(error, trainers);
   })
 }
@@ -636,15 +658,34 @@ function getTrainer(username, callback) {
 * @return callback(Error error, Trainer[] trainers)
 */
 function getAvailableTrainers(username, callback) {
-  trainerRepo.findOnlineTrainers(username, function(error, trainers) {
+  trainerRepo.getOnlineTrainers(username, function(error, trainers) {
     callback(error, trainers);
   });
 }
+
+/**
+* Fetches a trainer's badges from the local database
+* @param String username
+* @param Function callback(error, badges)
+* @return callback(Error error, Badges badgs)
+*/
+function getProfile(username, callback) {
+  badgeRepo.findByUsername(username, function(error, badges) {
+    return callback(error, badges);
+  });
+}
+
 
 // Exports
 module.exports = {
   pokemonClub : pokemonClub,
   googleOAuth : googleOAuth,
+  logout : logout,
   getAvailableTrainers : getAvailableTrainers,
-  getTrainer : getTrainer
+  getTrainer : getTrainer,
+  getProfile : getProfile,
+  getInventory : getInventory,
+  getPokemonTeam : getPokemonTeam,
+  getPokedex : getPokedex,
+  getStatistics : getStatistics
 }

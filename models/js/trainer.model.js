@@ -7,8 +7,8 @@ var TrainerSchema = new Schema({
     provider: {type:String, required:true},   // Provider 'ptc' or 'google'
     username: {type:String, required:true},   // PTC Username or Google Gmail
     ticket: {type:String, required:false},    // Ticket only required for PTC for token fetching
-    accessToken: {type:String, required:true},// Token required for API calls
-    apiEndpoint: {type:String, required:true} // API endpoint for API calls
+    accessToken: {type:String, required:false},// Token required for API calls
+    apiEndpoint: {type:String, required:false} // API endpoint for API calls
   },
   location: {
     latitude: {type:Number, required:true},   // API requests require player location

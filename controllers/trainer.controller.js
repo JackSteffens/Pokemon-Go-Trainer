@@ -5,48 +5,39 @@ var trainerService = require('../services/trainer.service.js');
 /**
 * Get all known trainers from database. If a username is given then only return
 * that specific trainer oject.
-* @param (optional) String username
-* @return [{Trainer}]
+* @param req , containing optional String req.query.username
+* @param res
+* @return Trainer[] trainers , array of Trainer objects
 */
-exports.getTrainer = function(req, res) {
-  trainerService.getAvailableTrainers(null, function(error, trainers) {
+function getTrainer(req, res) {
+  var username = req.query.username || null;
+  trainerService.getTrainer(username, function(error, trainers) {
     if (error) {
       res.status('400');
-      res.send(err);
-      return;
+      return res.send(err);
     }
-    res.send(trainers);
-    return;
+    return res.send(trainers);
   })
-};
+}
 
 /**
 * Get logged in trainers from database. If a username is given then only return
 * that specific trainer object.
+* @param req , containing optional String req.query.username
+* @param res
+* @return Trainer[] trainers , array of Trainer objects
 */
-exports.getAvailableTrainers = function(req, res) {
-  trainerService.getAvailableTrainers(null, function(trainers) {
-    res.send(trainers);
+function getAvailableTrainers(req, res) {
+  var username = req.query.username || null;
+  trainerService.getAvailableTrainers(username, function(error, trainers) {
+    if (error) {
+      res.status('400');
+      return res.send(error);
+    } else {
+      return res.send(trainers);
+    }
   });
 }
-
-/**
-* Get trainer profile from Niantic server
-* @param String username
-* @return {Medals, Levels, something}
-*/
-exports.getProfile = function(req, res) {
-  console.log('[!] Requesting profile for user : '+req.query.username);
-};
-
-/**
-* GET : Get trainer inventory
-* @param : username (String) (in-game username)
-* @return {Inventory}
-*/
-exports.getInventory = function(req, res) {
-  console.log('[!] Requesting inventory for user : '+req.query.username);
-};
 
 /**
 * Request an API token from the Niantic Server, stores a trainer object
@@ -56,7 +47,7 @@ exports.getInventory = function(req, res) {
 * @param String provider, req.body.provider : "ptc" || "google"
 * @return {}
 */
-exports.login = function(req, res) {
+function login(req, res) {
   credentials = {
     username : req.body.username,
     password : req.body.password,
@@ -77,11 +68,9 @@ exports.login = function(req, res) {
       if (err) {
         console.log("[!] Error : "+err);
         res.status('400');
-        res.send(err);
-        return;
+        return res.send(err);
       }
-      res.send(trainerObj);
-      return;
+      return res.send(trainerObj);
     });
   } else if (credentials.provider === 'google') {
     console.log('[i] Logging in as : '+credentials.username+' on Google');
@@ -90,19 +79,16 @@ exports.login = function(req, res) {
         console.log("[!] Error : "+err);
         res.status('400');
         try {
-          res.send(err);
+          return res.send(err);
         } catch (e) {
-          res.send("Error logging into Google services");
+          return res.send("Error logging into Google services");
         }
-        return;
       }
-      res.send(trainerObj);
-      return;
+      return res.send(trainerObj);
     })
   } else {
     res.status('400');
-    res.send('[!] No valid provider provided');
-    return;
+    return res.send('[!] No valid provider provided');
   }
 };
 
@@ -111,37 +97,90 @@ exports.login = function(req, res) {
 * from the 'available' array.
 * @return {}
 */
-exports.logout = function(req, res) {
-  var username = (req.body.username || req.query.username);
+function logout(req, res) {
+  var username = req.query.username;
   if (!username) {
     console.log('[#] No username supplied.');
     res.status('400');
-    res.send('No username supplied');
-    return;
+    return res.send('No username supplied');
   }
 
-  var trainerObj = trainerService.getAvailableTrainers(username);
+  trainerService.logout(username, function(error, trainer) {
+    if (error) {
+      res.status('400');
+      return res.send(error);
+    } else if (trainer) {
+      return res.send(trainer);
+    } else {
+      res.status('400');
+      res.send(new Error('No trainer found'))
+    }
+  });
+}
 
-  if (!trainerObj) {
-    console.log('[#] User '+username+' was not logged in or does not exist.')
-    res.status('404');
-    res.send('User not found. User was not logged in or does not exist.')
-    return;
+/**
+* Get trainer profile from local database
+* @param String username
+* @return {Medals, Levels, something}
+*/
+function getProfile(req, res) {
+  var username = req.query.username || null;
+  if (!username) {
+    res.status('400');
+    return res.send(new Error('No username supplied'));
   }
+  trainerService.getProfile(username, function(error, badges) {
+    if (error) {
+      res.status('400');
+      return res.send(error);
+    } else if (badges) {
+      return res.send(badges);
+    } else {
+      res.status('400');
+      res.send(new Error('No badges found'))
+    }
+  });
+}
 
-  console.log(trainerObj);
-  // TODO This should happen upon logout. No need to call this function.
-  // trainerService.deleteAvailableTrainer(username);
-  // console.log(trainerService.getAvailableTrainers())
-
-  // update trainerObj to lose it's ticket, token and endpoint
-  // remove trainer from availaleUsers
+/**
+* GET : Get trainer inventory
+* @param : username (String) (in-game username)
+* @return {Inventory}
+*/
+function getInventory(req, res) {
+  console.log('[!] Requesting inventory for user : '+req.query.username);
 };
+
 
 /**
 * Get pokemon by trainer username and pokemon ID ??
 * @return {Pokemon}
 */
-exports.getPokemon = function(req, res) {
+function getPokemon(req, res) {
  // TODO Implement
-};
+}
+
+function getPokedex() {
+
+}
+
+function getStatistics() {
+
+}
+
+function getCandies() {
+
+}
+
+module.exports = {
+  getTrainer : getTrainer,
+  login : login,
+  logout : logout,
+  getInventory : getInventory,
+  getProfile : getProfile,
+  getAvailableTrainers : getAvailableTrainers,
+  getPokemon : getPokemon,
+  getPokedex : getPokedex,
+  getStatistics : getStatistics,
+  getCandies : getCandies
+}

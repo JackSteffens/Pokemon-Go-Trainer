@@ -1,6 +1,7 @@
 // Model
 var path = require('path')
 var Badges = require(path.resolve(__dirname+'/../models/js/badge.model.js')).Badges;
+var colors = require('colors');
 
 /**
 * Fetch Badges by Trainer username
@@ -12,7 +13,7 @@ function findByUsername(username, callback) {
   Badges.findOne(
     {'owner':username},
     function (error, badges) {
-      if (error)console.log('[!] Error fetching badges');
+      if (error) console.log('[!] Error fetching badges \n'+error);
       else if (badges) console.log('[i] Found badges for : '+username);
       return callback(error, badges);
     }
@@ -29,10 +30,10 @@ function findByUsername(username, callback) {
 function updateBadges(username, badges, callback) {
   Badges.findOneAndUpdate(
     {'owner':username},
-    {'badges':badges},
+    badges,
     {runValidators:true, new:true},
     function(error, newBadges) {
-      if (error) console.log('[!] Error updating badges');
+      if (error) console.log(('[!] Error updating badges \n'+error).red);
       else if (newBadges) console.log('[i] Updates bades for : '+username);
       return callback(error, newBadges);
     }
@@ -53,7 +54,7 @@ function updateBadge(username, badge, callback) {
     {'$set' : badge},
     {runValidators:true, new:true},
     function(error, newBadges) {
-      if (error) console.log('[!] Error updating badge');
+      if (error) console.log(('[!] Error updating badge \n'+error).red);
       else if (newBadges) console.log('[i] Updated badge for : '+username+', item : '+badge.badge_type);
       return callback(error, newBadges);
     }
@@ -69,9 +70,9 @@ function updateBadge(username, badge, callback) {
 */
 function createBadges(username, badges, callback) {
   Badges.create(
-    {'owner':username, 'badges':badges},
+    {'owner':username, badges},
     function(error, newBadges) {
-      if (error) console.log('[!] Error creating badges');
+      if (error) console.log(('[!] Error creating badges \n'+error).red);
       else if (newBadges) console.log('[i] Created badges for : '+username);
       return callback(error, newBadges);
     }
