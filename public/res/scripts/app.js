@@ -113,6 +113,7 @@ module.config(function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
         }
       }
     })
-}).run(function(Authenticate) {
+}).run(function(Authenticate, Socket) {
   Authenticate.fetchTrainers();
+  Socket.init();
 });

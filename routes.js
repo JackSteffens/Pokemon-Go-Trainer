@@ -25,6 +25,7 @@ exports.setRequestUrl = function(app) {
   app.get('/api/trainer/pokedex', trainer.getPokedex);
   app.get('/api/trainer/statistics', trainer.getStatistics);
   app.get('/api/trainer/candies', trainer.getCandies);
+  app.post('/api/trainer/location', trainer.updateLocation);
 
   // Web application index
   app.get('/', function(req, res) {

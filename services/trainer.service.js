@@ -7,6 +7,7 @@ var protobuf = require('protobufjs');       // Decoding responses using .proto
 var GoogleOAuth = require('gpsoauthnode');  // Google authentication
 var Long = require('long')                  // Long for date timestamps
 var colors = require('colors');             // Console collors
+var websocket = require('../utils/websocket.js');
 
 // Repositories
 var trainerRepo = require(path.resolve(__dirname+'/../repositories/trainer.repository.js'));
@@ -440,7 +441,7 @@ function fetchProfile(trainerObj, callback) {
     if (error) {
       return callback(error);
     } else if (!badges) {
-      return callback(new Error('No badges received.'));
+      return callback(('No badges received.'));
     } else {
       console.log('[i] Badges fetched!');
       return callback(null, badges);
@@ -461,7 +462,7 @@ function fetchTrainerData(trainerObj, callback) {
     if (error) {
       return callback(error);
     } else if (!statistics) {
-      return callback(new Error('No statistics received.'));
+      return callback(('No statistics received.'));
     } else {
       return callback(null, statistics.player_data);
     }
@@ -480,7 +481,7 @@ function fetchInventory(trainerObj, callback) {
     if (error) {
       return callback(error);
     } else if (!inventory) {
-      return callback(new Error('No inventory received.'));
+      return callback(('No inventory received.'));
     }
 
     // parseInventory();
@@ -541,7 +542,7 @@ function getApiEndpoint(trainerObj, callback) {
       console.log("[!] ApiEndpoint received! : "+api_endpoint);
       return callback(null, trainerObj);
     } else {
-      return callback(new Error('No api url received!'));
+      return callback(('No api url received!'));
     }
   });
 }
@@ -570,7 +571,7 @@ function pokemonClub(credentials, callback) {
    replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
      data = JSON.parse(body);
    } else {
-     return callback(new Error('Response was not valid JSON. Restart the server.'))
+     return callback(('Response was not valid JSON. Restart the server.'))
    }
    console.log('[i] First request successful.');
    ptcHandshakeCallback(data, credentials, callback);
@@ -619,7 +620,7 @@ function googleOAuth(credentials, callback) {
 * @return callback(Error error, Trainer trainer) , logged out Trainer with ereased login details
 */
 function logout(username, callback) {
-  if (!username) return callback(new Error('No username supplied'));
+  if (!username) return callback(('No username supplied'));
   getAvailableTrainers(username, function(error, trainer) {
     if (error) {
       console.log('[!] Error logging out user '+username);
@@ -633,7 +634,7 @@ function logout(username, callback) {
         return callback(error, newTrainer);
       });
     } else {
-      return callback(new Error('User '+username+' was not logged in'))
+      return callback(('User '+username+' was not logged in'))
     }
   })
 }
@@ -701,6 +702,24 @@ function getCandies(username, callback) {
   candyRepo.findCandies(username, callback);
 }
 
+/**
+* Update a trainer's location and broadcast it over the private websocket channel
+*
+*/
+function updateLocation(username, location, callback) {
+  if (location && location.latitude && location.longitude) {
+    trainerRepo.updateLocation(username, location, function(error, newTrainer) {
+      if (error) return callback(error);
+      else if (newTrainer) {
+        // Broadcast to websocket channel 'trainer/username'
+        websocket.broadcast('location/'+newTrainer.username, newTrainer);
+        console.log(newTrainer);
+        return callback(error, newTrainer);
+      }
+    })
+  }
+}
+
 // Exports
 module.exports = {
   pokemonClub : pokemonClub,
@@ -713,5 +732,6 @@ module.exports = {
   getPokemonTeam : getPokemonTeam,
   getPokedex : getPokedex,
   getStatistics : getStatistics,
-  getCandies : getCandies
+  getCandies : getCandies,
+  updateLocation : updateLocation
 }

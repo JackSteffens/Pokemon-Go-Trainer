@@ -1,5 +1,5 @@
 angular.module('pogobot').controller('MapCtrl',
-function($scope, $rootScope, $mdSidenav, $http, NgMap, Api) {
+function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, TrainerService, Socket) {
   // Variables
   var map;
   var EXTERNAL_SCANNER = false;
@@ -16,7 +16,8 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap, Api) {
     gym : true
   }
   $scope.directions = [];
-  $scope.character = {};
+  $scope.currentTrainer = TrainerService.getCurrentTrainer();
+  $scope.trainers = TrainerService.getTrainers();
   $scope.pokemon = {};
   $scope.markerIcons = {};
   $scope.characterIcon = {
@@ -29,14 +30,61 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap, Api) {
 
   // Scope functions
   $scope.displayPokemonInfo = displayPokemonInfo;
+  $scope.displayTrainerInfo = displayTrainerInfo;
   $scope.getDirections = getDirections;
   $scope.getNearbyData = getNearbyData;
 
   // Functions
+  function init() {
+    getPokedex();
+    getNearbyData();
+    getDirections();
+    getMap();
+
+    // Set websocket channels
+    for (var i = 0; i < $scope.trainers.length; i++) {
+      Socket.subscribe('location/'+$scope.trainers[i].username, function(trainerObj) {
+        var trainer = $filter('filter')($scope.trainers, {username:trainerObj.username}, true)[0];
+        var index = $scope.trainers.indexOf(trainer);
+        $scope.trainers[index].location = trainerObj.location;
+        $scope.$apply();
+      });
+    }
+
+    // Set watcher with a delay. Wait for map to be initialized
+    $timeout(function() {
+      initWatchers();
+    },2000);
+  }
+
+  function initWatchers() {
+    // Watch on current selected trainer
+    $scope.$watch(function() {
+      return TrainerService.getCurrentTrainer();
+    }, function(trainer) {
+      $scope.currentTrainer = trainer;
+      if (trainer.location && trainer.location.latitude && trainer.location.longitude && this.map)
+        this.map.setCenter({lat: trainer.location.latitude, lng: trainer.location.longitude});
+    }, true);
+
+    // Watch on all trainers
+    $scope.$watch(function() {
+      return TrainerService.getTrainers();
+    }, function(trainers) {
+      $scope.trainers = trainers;
+      // Focus on curent character coordinates
+    }, true);
+  }
+
   function displayPokemonInfo(event, poke) {
     $scope.pokemonDetails = poke;
     // console.log($scope.pokemonDetails);
     this.map.showInfoWindow('info-window-pokemon', this);
+  }
+
+  function displayTrainerInfo(event, trainer) {
+    $scope.trainerDetails = trainer;
+    this.map.showInfoWindow('info-window-trainer', this);
   }
 
   function getDirections(originLat, originLng, destLat, destLng) {
@@ -54,9 +102,11 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap, Api) {
   function getMap() {
     NgMap.getMap('map').then(function(map) {
       this.map = map;
-      // TODO Create a service for characters and center the map based on character's location rather than setting the char's location based on map's center.
-      $scope.character.lat = map.center.lat();
-      $scope.character.lng = map.center.lng();
+      // If we don't have a trainer selected yet, just center aroud the first
+      // trainer that's available in the trainer list. Else, wait for watcher.
+      if (!TrainerService.getCurrentTrainer)
+        if ($scope.trainers[0])
+          this.map.setCenter({lat: $scope.trainers[0].location.latitude, lng: $scope.trainers[0].location.longitude});
     });
   }
 
@@ -123,8 +173,5 @@ function($scope, $rootScope, $mdSidenav, $http, NgMap, Api) {
   }
 
   // Start
-  getPokedex();
-  getNearbyData();
-  getDirections();
-  getMap();
+  init();
 });

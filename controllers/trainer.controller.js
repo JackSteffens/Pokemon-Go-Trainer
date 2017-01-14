@@ -113,7 +113,7 @@ function logout(req, res) {
       return res.send(trainer);
     } else {
       res.status('400');
-      res.send(new Error('No trainer found'));
+      res.send(('No trainer found'));
     }
   });
 }
@@ -127,7 +127,7 @@ function getProfile(req, res) {
   var username = req.query.username || null;
   if (!username) {
     res.status('400');
-    return res.send(new Error('No username supplied'));
+    return res.send(('No username supplied'));
   }
   trainerService.getProfile(username, function(error, badges) {
     if (error) {
@@ -137,7 +137,7 @@ function getProfile(req, res) {
       return res.send(badges);
     } else {
       res.status('400');
-      res.send(new Error('No badges found'));
+      res.send(('No badges found'));
     }
   });
 }
@@ -151,7 +151,7 @@ function getInventory(req, res) {
   var username = req.query.username || null;
   if (!username) {
     res.status('400');
-    return res.send(new Error('No username supplied'));
+    return res.send(('No username supplied'));
   }
   trainerService.getInventory(username, function(error, inventory) {
     if (error) {
@@ -161,7 +161,7 @@ function getInventory(req, res) {
       return res.send(inventory);
     } else {
       res.status('400');
-      return res.send(new Error('No inventory found'));
+      return res.send(('No inventory found'));
     }
   });
 };
@@ -175,7 +175,7 @@ function getPokemon(req, res) {
   var username = req.query.username || null;
   if (!username) {
     res.status('400');
-    return res.send(new Error('No username supplied'));
+    return res.send(('No username supplied'));
   }
   trainerService.getPokemonTeam(username, function(error, pokemon) {
     if (error) {
@@ -185,7 +185,7 @@ function getPokemon(req, res) {
       return res.send(pokemon);
     } else {
       res.status('400');
-      return res.send(new Error('No pokemon found'));
+      return res.send(('No pokemon found'));
     }
   });
 }
@@ -199,7 +199,7 @@ function getPokedex(req, res) {
   var username = req.query.username || null;
   if (!username) {
     res.status('400');
-    return res.send(new Error('No username supplied'));
+    return res.send(('No username supplied'));
   }
   trainerService.getPokedex(username, function(error, pokedex) {
     if (error) {
@@ -209,7 +209,7 @@ function getPokedex(req, res) {
       return res.send(pokedex);
     } else {
       res.status('400');
-      return res.send(new Error('No pokedex found'));
+      return res.send(('No pokedex found'));
     }
   });
 }
@@ -223,7 +223,7 @@ function getStatistics(req, res) {
   var username = req.query.username || null;
   if (!username) {
     res.status('400');
-    return res.send(new Error('No username supplied'));
+    return res.send(('No username supplied'));
   }
   trainerService.getStatistics(username, function(error, statistics) {
     if (error) {
@@ -233,7 +233,7 @@ function getStatistics(req, res) {
       return res.send(statistics);
     } else {
       res.status('400');
-      return res.send(new Error('No statistics found'));
+      return res.send(('No statistics found'));
     }
   });
 }
@@ -247,7 +247,7 @@ function getCandies(req, res) {
     var username = req.query.username || null;
     if (!username) {
       res.status('400');
-      return res.send(new Error('No username supplied'));
+      return res.send(('No username supplied'));
     }
     trainerService.getCandies(username, function(error, candies) {
       if (error) {
@@ -257,9 +257,43 @@ function getCandies(req, res) {
         return res.send(candies);
       } else {
         res.status('400');
-        return res.send(new Error('No candies found'));
+        return res.send(('No candies found'));
       }
     });
+}
+
+/**
+* Update trainer's location
+* @param String req.query.username
+* @param Float req.query.latitude
+* @param Float req.query.longitude
+* @return Trainer {trainer}
+*/
+function updateLocation(req, res) {
+  var username = req.query.username || null;
+  var location = {
+    latitude  : parseFloat(req.query.latitude),
+    longitude : parseFloat(req.query.longitude)
+  };
+  if (!username) {
+    res.status('400');
+    return res.send(('No username supplied'));
+  } else if (!location || !location.latitude || !location.longitude) {
+    res.status('400');
+    return res.send(('No location supplied'));
+  }
+  trainerService.updateLocation(username, location, function(error, newTrainer) {
+    if (error) {
+      console.log((error).red);
+      res.status('400');
+      return res.send(error);
+    } else if (newTrainer) {
+      return res.send(newTrainer);
+    } else {
+      res.status('400');
+      return res.send(('No trainer found'));
+    }
+  })
 }
 
 module.exports = {
@@ -272,5 +306,6 @@ module.exports = {
   getPokemon : getPokemon,
   getPokedex : getPokedex,
   getStatistics : getStatistics,
-  getCandies : getCandies
+  getCandies : getCandies,
+  updateLocation : updateLocation
 }

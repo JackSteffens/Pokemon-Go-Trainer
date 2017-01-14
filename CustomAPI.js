@@ -55,7 +55,7 @@ function api_req(trainerObj, requestType, callback, responseType) {
 
   request.post(options, function(error, res, body) {
     if (res === undefined || body === undefined) {
-      return callback(new Error('Pokémon Go server is unreachable. Might be offline'));
+      return callback(('Pokémon Go server is unreachable. Might be offline'));
     } else if (error) {
       return callback(error)
     }

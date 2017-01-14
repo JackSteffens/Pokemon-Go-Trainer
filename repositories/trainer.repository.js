@@ -76,6 +76,13 @@ function updateTrainer(trainer, callback) {
     });
 }
 
+/**
+* Update the trainer's Statistics
+* @param String username , unique indentifier
+* @param Statistics {statistics} , Trainer.Statistics child object
+* @param Function callback(error, newTrainer)
+* @return callback(Error error, Trainer newTrainer)
+*/
 function updateStatistics(username, statistics, callback) {
   Trainer.findOneAndUpdate(
     {'username':username},
@@ -87,6 +94,26 @@ function updateStatistics(username, statistics, callback) {
       return callback(error, newTrainer);
     }
   );
+}
+
+/**
+* Update the trainer's location
+* @param String username , unique indentifier
+* @param Object {location} , containing location.latitude & location.longitude
+* @param Function callback(error, newTrainer)
+* @param callback(Error error, Trainer newTrainer) callback function
+*/
+function updateLocation(username, location, callback) {
+  Trainer.findOneAndUpdate(
+    {'username':username},
+    {'location':location},
+    {runValidators:true, new:true},
+    function(error, newTrainer) {
+      if (error) console.log(('[!] Error udating trainer location \n'+error).red)
+      else console.log('[i] Updated location for user : '+username)
+      return callback(error, newTrainer);
+    }
+  )
 }
 
 /**
@@ -110,5 +137,6 @@ module.exports = {
   getOnlineTrainers : getOnlineTrainers,
   updateTrainer : updateTrainer,
   updateStatistics : updateStatistics,
+  updateLocation : updateLocation,
   createTrainer : createTrainer
 }

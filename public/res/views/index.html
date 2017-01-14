@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <link rel="SHORTCUT ICON" href="" type="image/x-icon">
-
 <head>
   <title>Pogo Bot</title>
 
@@ -21,8 +20,9 @@
   <script type="text/javascript" src="res/scripts/filters/countdown.filter.js"></script>
 
   <!-- Angular services -->
-  <script style="text/javascript" src="res/scripts/services/api.service.js"></script>
-  <script style="text/javascript" src="res/scripts/services/trainer.service.js"></script>
+  <script type="text/javascript" src="res/scripts/services/api.service.js"></script>
+  <script type="text/javascript" src="res/scripts/services/trainer.service.js"></script>
+  <script type="text/javascript" src="res/scripts/services/socket.service.js"></script>
 
   <!-- Angular factories -->
   <script style="text/javascript" src="res/scripts/factories/authenticate.factory.js"></script>
@@ -38,7 +38,6 @@
 <body ng-app="pogobot" md-theme="mystic">
   <!-- Button toggeling sidenav -->
   <menubutton></menubutton>
-
   <sidenav></sidenav>
   <div ui-view class="view"></div>
 </body>

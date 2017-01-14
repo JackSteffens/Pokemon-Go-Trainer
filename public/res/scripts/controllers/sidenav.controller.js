@@ -15,7 +15,6 @@ function($scope, $mdSidenav, TrainerService) {
     }, true);
 
     $scope.$watch('selectedCharacterIndex', function(newVal, oldVal) {
-      console.log(newVal)
       if (oldVal != newVal) {
         selectTrainer(newVal)
       }
@@ -27,7 +26,6 @@ function($scope, $mdSidenav, TrainerService) {
       var newTrainer = TrainerService.getOnlineTrainers()[index];
       if (newTrainer)
         TrainerService.setTrainer(newTrainer.username);
-      console.log(TrainerService.getCurrentTrainer());
     }
   }
 
