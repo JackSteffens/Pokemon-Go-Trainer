@@ -11,10 +11,10 @@
         md-row-height-gt-md="1:1" md-row-height="2:2"
         md-gutter="12px" md-gutter-gt-sm="8px" >
 
+      <!-- Trainer card -->
       <md-grid-tile class="trainer-profile-card"
                     ng-repeat="trainer in trainers"
                     md-whiteframe="2">
-
         <md-content md-theme="mysticBackground" class="grid-tile-container md-hue-2">
           <div class="trainer-profile-card-image" layout="column" layout-align="start end">
             <!-- Login button -->
@@ -41,14 +41,14 @@
 
         <md-grid-tile-footer>
           <!-- Exp -->
-          <md-progress-linear md-mode="determinate" class="md-accent" value="{{100/i}}"></md-progress-linear>
+          <md-progress-linear md-mode="determinate" class="md-accent" value="{{100*trainer.statistics.experience/trainer.statistics.next_level_xp}}"></md-progress-linear>
           <md-tooltip md-direction="top">
-            {{100/i*100 | number:0}} / {{10000 | number:0}} XP
+            {{trainer.statistics.experience | number:0}} / {{trainer.statistics.next_level_xp | number:0}} XP
           </md-tooltip>
 
           <!-- Info -->
           <h3>name : {{trainer.username}}</h3>
-          <h3>level : {{trainer.level}}</h3>
+          <h3>level : {{trainer.statistics.level}}</h3>
         </md-grid-tile-footer>
       </md-grid-tile>
 

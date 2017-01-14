@@ -76,6 +76,19 @@ function updateTrainer(trainer, callback) {
     });
 }
 
+function updateStatistics(username, statistics, callback) {
+  Trainer.findOneAndUpdate(
+    {'username':username},
+    {'statistics':statistics},
+    {runValidators:true, new:true},
+    function(error, newTrainer) {
+      if (error) console.log(('[!] Error updating trainer stats \n'+error).red)
+      else console.log('[i] Updated existing trainer stats : '+newTrainer.username);
+      return callback(error, newTrainer);
+    }
+  );
+}
+
 /**
 * Create new trainer object in the local database
 * @param Trainer trainer
@@ -96,5 +109,6 @@ module.exports = {
   getTrainer : getTrainer,
   getOnlineTrainers : getOnlineTrainers,
   updateTrainer : updateTrainer,
+  updateStatistics : updateStatistics,
   createTrainer : createTrainer
 }

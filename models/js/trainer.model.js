@@ -14,6 +14,38 @@ var Avatar = new Schema({                  // Trainer's look
   backpack: {type:Number, required:true}   // Backpack style
 });
 
+var PokemonType = new Schema({
+
+});
+
+var StatisticsSchema = new Schema({
+  level: {type:Number, required:true},
+  experience: {type:Number, required:true},
+	prev_level_xp: {type:Number, required:true},
+	next_level_xp: {type:Number, required:true},
+	km_walked: {type:Number, required:true},
+	pokemons_encountered: {type:Number, required:true},
+	unique_pokedex_entries: {type:Number, required:true},
+	pokemons_captured: {type:Number, required:true},
+	evolutions: {type:Number, required:true},
+	poke_stop_visits: {type:Number, required:true},
+	pokeballs_thrown: {type:Number, required:true},
+	eggs_hatched: {type:Number, required:true},
+	big_magikarp_caught: {type:Number, required:true},
+	battle_attack_won: {type:Number, required:true},
+	battle_attack_total: {type:Number, required:true},
+	battle_defended_won: {type:Number, required:true},
+	battle_training_won: {type:Number, required:true},
+	battle_training_total: {type:Number, required:true},
+	prestige_raised_total: {type:Number, required:true},
+	prestige_dropped_total: {type:Number, required:true},
+	pokemon_deployed: {type:Number, required:true},
+	pokemon_caught_by_type: {required:false},
+	small_rattata_caught: {type:Number, required:true},
+	used_km_pool: {type:Number, required:false},
+	last_km_refill_ms: {type:Number, required:false},
+});
+
 var TrainerSchema = new Schema({
   login: {                                    // Login name, not required. Just for frontend
     provider: {type:String, required:true},   // Provider 'ptc' or 'google'
@@ -32,8 +64,6 @@ var TrainerSchema = new Schema({
              unique:true},
   creation_timestamp: {type:Number, required:true}, // Date created
   team: {type:Number, required:true},
-  level: {type:Number, required:false},      // Level
-  xp: {type:Number, required:false},         // Current xp
   team: {type:Number, required:true},        // Gym team
   avatar: Avatar,
   currency: {
@@ -56,7 +86,8 @@ var TrainerSchema = new Schema({
   	start_km_walked: {type:Number, required:true},
   	last_km_awarded: {type:Number, required:true}
   },
-  battle_lockout_end_ms: {type:Number, required:true}
+  battle_lockout_end_ms: {type:Number, required:true},
+  statistics: {type:StatisticsSchema, required:false}
 });
 
 Trainer = mongoose.model('trainers', TrainerSchema);

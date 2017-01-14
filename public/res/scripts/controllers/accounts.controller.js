@@ -1,35 +1,20 @@
 angular.module('pogobot').controller('AccountsCtrl',
-function($scope, $rootScope, $http, $mdDialog, Api) {
+function($scope, $rootScope, $http, $mdDialog, Api, TrainerService, Authenticate, $timeout) {
   // Scope variables
   $rootScope.currentUI = 'accounts';
-  $scope.trainers = {};
+  $scope.trainers = TrainerService.getTrainers();
 
   // Scope functions
   $scope.loginPopup = loginPopup;
-  $scope.getTrainers = getTrainers;
-  $scope.getAvailableTrainers = getAvailableTrainers;
+  $scope.getAvailableTrainers = Authenticate.fetchTrainers;
 
-  function getTrainers() {
-    $http({
-      method: 'GET',
-      url: Api.url.trainer
-    }).then(function successCallback(response) {
-      $scope.trainers = response.data;
-    }, function errorCallback(response) {
-      console.log('An error occured');
-      console.log(response);
-    });
-  }
-
-  function getAvailableTrainers() {
-    $http({
-      method: 'GET',
-      url: Api.url.availableTrainers
-    }).then(function successCallback(response) {
-      console.log(response.data);
-    }, function errorCallback(response) {
-      console.log('error fetching online trainers')
-    });
+  function init() {
+    // Set watcher
+    $scope.$watch(function() {
+      return TrainerService.trainers;
+    }, function(newVal, oldVal) {
+      $scope.trainers = newVal;
+    }, true);
   }
 
   function loginPopup(event, account) {
@@ -47,9 +32,9 @@ function($scope, $rootScope, $http, $mdDialog, Api) {
         }
       }
     }).then(function successCallback() {
-      getTrainers();
+      console.log('Login successfull');
     });
   }
-  // Start
-  getTrainers();
+
+  init();
 });

@@ -7,7 +7,7 @@ var module = angular.module('pogobot', [
   'ngMap'
 ]);
 
-module.config(['$stateProvider', '$urlRouterProvider', '$mdThemingProvider', function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
+module.config(function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
   // Picking default pallets for gym teams
   $mdThemingProvider.theme('mystic')
     .primaryPalette('indigo')
@@ -113,4 +113,6 @@ module.config(['$stateProvider', '$urlRouterProvider', '$mdThemingProvider', fun
         }
       }
     })
-}]);
+}).run(function(Authenticate) {
+  Authenticate.fetchTrainers();
+});

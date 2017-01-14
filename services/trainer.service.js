@@ -196,6 +196,7 @@ function postTokenCallback(authObjects, credentials, callback) {
           storeInventoryItems(trainerObj, items);
           storePokedex(trainerObj, pokedex);
           storeCandy(trainerObj, candy);
+          storeStatistics(trainerObj, stats);
           // storeInventoryUpgrades(trainerObj, upgrades);
           // storeEggIncubators(trainerObj, incubators);
           console.log('[i] inventory count : ['+inventory.length+']');
@@ -414,6 +415,20 @@ function storeCandy(trainerObj, candies) {
 }
 
 /**
+* Stores a statistics object into the designated Trainer object
+*
+*/
+function storeStatistics(trainerObj, statistics) {
+  statistics.pokemon_caught_by_type = undefined;
+  trainerRepo.getTrainer(trainerObj.username, function(error, oldTrainerObj) {
+    if (error) return;
+    else if (oldTrainerObj)
+      trainerRepo.updateStatistics(oldTrainerObj.username, statistics, function(error, newTrainerObj) {});
+    else return; // Don't store the statistics anywhere as there's no trainer
+  });
+}
+
+/**
 * Fetches a Trainer's badges from the Niantic servers and stores them locally.
 * @param Trainer {trainerObj} , required for authentication.
 * @param callback(error, obj) , return function.
@@ -572,11 +587,11 @@ function pokemonClub(credentials, callback) {
 * @return callback(Error error, Trainer trainerObj) , error and response handler
 */
 function googleOAuth(credentials, callback) {
-    var authObjects = {
-      ticket : undefined,
-      token : undefined,
-      endpoint : undefined
-    }
+  var authObjects = {
+    ticket : undefined,
+    token : undefined,
+    endpoint : undefined
+  }
   google.login(credentials.username, credentials.password, config.ANDROID_ID, function(error, data) {
     if (error) {
       console.log(('[!] Error logging into Google services').red)
@@ -592,7 +607,7 @@ function googleOAuth(credentials, callback) {
         postTokenCallback(authObjects, credentials, callback);
       })
     }
-  })
+  });
 }
 
 /**

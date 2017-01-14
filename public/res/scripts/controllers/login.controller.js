@@ -1,5 +1,5 @@
 angular.module('pogobot').controller('loginCtrl',
-function($scope, $timeout, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api, $mdToast) {
+function($scope, $timeout, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api, Authenticate, $mdToast) {
   $scope.trainerObj = trainerObj;
 
   if (trainerObj) {
@@ -37,24 +37,35 @@ function($scope, $timeout, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api,
   function login() {
     $scope.loginDisabled = true;
     $scope.isLoading = true;
-    $http({
-      method: 'POST',
-      url: Api.url.login,
-      data: $scope.authObj
-    }).then(function successCallback(response) {
-      console.log(response);
-      $mdDialog.hide('succesful login');
-    }, function errorCallback(error) {
-      console.log(error);
-      $scope.loginDisabled = false;
+    $scope.$on('login/'+$scope.authObj.username, postLogin);
+    Authenticate.login($scope.authObj, function(error, trainer) {
+        console.log(trainer);
+    })
+  }
+
+  function postLogin(event, args) {
+    var authenticated = args.authenticated;
+    if (authenticated) {
       $scope.isLoading = false;
-    $mdToast.show(
-      $mdToast.simple()
-        .textContent('Logging in failed!')
-        .position("top right")
-        .hideDelay(3000)
-    );
-    });
+      $mdDialog.hide('Successfully logged in');
+      $mdToast.show(
+        $mdToast.simple()
+          .textContent('Successfully logged in!')
+          .position("top right")
+          .hideDelay(3000)
+      );
+    } else {
+      $scope.isLoading = false;
+      $scope.loginDisabled = false;
+      $mdToast.show(
+        $mdToast.simple()
+          .textContent('Login failed!')
+          .position("top right")
+          .hideDelay(3000)
+      );
+    }
+    // Remove listener
+    $scope.$on('login/'+$scope.authObj.username, postLogin);
   }
 
   function getPlayerInventory(trainerObj) {

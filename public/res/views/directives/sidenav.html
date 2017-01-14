@@ -8,7 +8,7 @@
   </md-toolbar>
 
 <md-tabs class="md-primary md-hue-1 md-tabs-light" md-dynamic-height md-selected="selectedCharacterIndex">
-  <md-tab label="{{name}}" ng-repeat="name in names">
+  <md-tab label="{{trainer.username}}" ng-repeat="trainer in trainers">
     <md-content class="sidenav-user">
       <md-grid-list md-cols="1" md-row-height="1:1">
         <md-grid-tile class="trainer-profile-card-nav">
@@ -33,12 +33,12 @@
 
             <!-- Info -->
             <div layout="row" style="padding-top:.25em; padding-right:16px;">
-              <h3 class="md-headline">{{name}}</h3>
+              <h3 class="md-headline">{{trainer.username}}</h3>
               <span flex></span>
               <h3 class="md-headline">
-                21
+                {{trainer.statistics.level}}
                 <md-tooltip md-direction="top">
-                  {{21496 | number:0}} / {{75000 | number:0}} XP
+                  {{trainer.statistics.experience | number:0}} / {{trainer.statistics.next_level_xp | number:0}} XP
                 </md-tooltip>
               </h3>
             </div>
@@ -57,7 +57,7 @@
       <!-- Only show when 1 or more trainers are registered -->
       <div>
         <md-menu-item>
-          <md-button ui-sref="character({user: names[selectedCharacterIndex]})" ng-click="closeSidenav()" ui-sref-active="selected">
+          <md-button ui-sref="character" ng-click="closeSidenav()" ui-sref-active="selected">
             <md-icon class="material-icons">folder_shared</md-icon>
             <span>Character Overview</span>
           </md-button>
