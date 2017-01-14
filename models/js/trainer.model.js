@@ -55,9 +55,10 @@ var TrainerSchema = new Schema({
     apiEndpoint: {type:String, required:false} // API endpoint for API calls
   },
   location: {
-    latitude: {type:Number, required:true},   // API requests require player location
-    longitude: {type:Number, required:true},  // ^
-    accuracy: {type:Number, required:true}    // ^
+    latitude: {type:Number, required:true},     // API requests require player location
+    longitude: {type:Number, required:true},    // ^
+    accuracy: {type:Number, required:true},     // ^
+    lastTimestamp: {type:Number, required:true} // Long {milliseconds} , last location update
   },
   username: {type:String,                     // In game (user)name
              required:true,

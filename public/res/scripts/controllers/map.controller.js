@@ -27,18 +27,19 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     anchor: [$scope.iconSize.x/2, $scope.iconSize.y]
   };
   $scope.pokemonDetails = {};
-
+  $scope.path = {};
   // Scope functions
   $scope.displayPokemonInfo = displayPokemonInfo;
   $scope.displayTrainerInfo = displayTrainerInfo;
   $scope.getDirections = getDirections;
   $scope.getNearbyData = getNearbyData;
+  $scope.getDirectionsFromPokemon = getDirectionsFromPokemon;
 
   // Functions
   function init() {
     getPokedex();
     getNearbyData();
-    getDirections();
+    // getDirections(52.360102, 4.786153, 52.350992, 4.77924);
     getMap();
 
     // Set websocket channels
@@ -57,14 +58,27 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     },2000);
   }
 
+  function getDirectionsFromPokemon(pokemon) {
+    if ($scope.currentTrainer && pokemon) {
+      getDirections(
+        $scope.currentTrainer.location.latitude,
+        $scope.currentTrainer.location.longitude,
+        pokemon.lat,
+        pokemon.lng
+      );
+    }
+  }
+
   function initWatchers() {
     // Watch on current selected trainer
     $scope.$watch(function() {
       return TrainerService.getCurrentTrainer();
     }, function(trainer) {
       $scope.currentTrainer = trainer;
-      if (trainer.location && trainer.location.latitude && trainer.location.longitude && this.map)
+      if (trainer && trainer.location && trainer.location.latitude && trainer.location.longitude && this.map) {
         this.map.setCenter({lat: trainer.location.latitude, lng: trainer.location.longitude});
+        $scope.path = undefined;
+      }
     }, true);
 
     // Watch on all trainers
@@ -88,14 +102,39 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
   }
 
   function getDirections(originLat, originLng, destLat, destLng) {
+    // Clear existing path
+    $scope.path = undefined;
     $http({
       method: 'GET',
-      url: Api.url.path+'?originlat=52.360102&originlng=4.786153&destlat=52.350992&destlng=4.77924'
+      url: Api.url.path+'?originlat='+originLat+'&originlng='+originLng+'&destlat='+destLat+'&destlng='+destLng
     }).then(function successCallback(response) {
-      // var directionsObject = google.maps.DirectionsRenderer;
-      // console.log(directionsObject)
-      $scope.directions = JSON.parse(response.data);
-      // console.log($scope.directions);
+      var directions = JSON.parse(response.data);
+
+      var waypoints = [];
+      var steps = directions.routes[0].legs[0].steps
+
+      for (var i = 0; i < steps.length; i++) {
+        var waypoint = {
+          location : new google.maps.LatLng({
+            lat:steps[i].start_location.lat,
+            lng:steps[i].start_location.lng
+          }),
+          stopover : false
+        }
+        waypoints.push(waypoint);
+      }
+
+      $scope.path = {
+        origin: new google.maps.LatLng({
+          lat:directions.routes[0].legs[0].start_location.lat,
+          lng:directions.routes[0].legs[0].start_location.lng
+        }),
+        destination: new google.maps.LatLng({
+          lat:directions.routes[0].legs[0].end_location.lat,
+          lng:directions.routes[0].legs[0].end_location.lng
+        }),
+        waypoints: waypoints
+      };
     });
   }
 

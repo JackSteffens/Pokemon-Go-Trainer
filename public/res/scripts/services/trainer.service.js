@@ -1,8 +1,8 @@
 angular.module('pogobot').service('TrainerService',
   function($filter, $http, Api) {
-    this.currentTrainer = {}; // Current globally selected user
-    this.trainers = []; // All known trainers, logged in or not
-    this.onlineTrainers = [];
+    this.currentTrainer = undefined; // Current globally selected user
+    this.trainers = undefined; // All known trainers, logged in or not
+    this.onlineTrainers = undefined;
 
     /**
     * Set globally visible character. This has effect on routing to pages

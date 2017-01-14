@@ -1,5 +1,6 @@
 <md-content class="map-container">
-      <ng-map center="52.3582993, 4.7819455" zoom="15"
+      <ng-map center="52.3582993, 4.7819455"
+              zoom="15"
               id="map" class="map"
               style="width: 100%; background-color:grey;">
         <!-- Player location -->
@@ -29,6 +30,10 @@
               <p>
                 Time left : {{pokemonDetails.disappear_time | countdownFilter}}
               </p>
+              <md-button ng-if="currentTrainer" ng-click="getDirectionsFromPokemon(pokemonDetails)">
+                Get Directions
+                <md-tooltip>{{currentTrainer.username}}</md-tooltip>
+              </md-button>
             </div>
           </div>
         </info-window>
@@ -53,11 +58,15 @@
                 position="[{{gym[1]}}, {{gym[2]}}]"
                 ng-if="markerEnabled.gym"
                 title="team : {{gym[0]}} | lvl : {{gym[3]}}"></marker>
-        <directions draggable="false"
-                    panel="directions-panel"
-                    travel-mode="bicycling"
-                    origin="place_id:Ei5adWlkZXJtb2xlbndlZyAxLCAxMDY5IENFIEFtc3RlcmRhbSwgTmVkZXJsYW5k"
-                    destination="place_id:ChIJJ3GX-uHjxUcRXETYtgPmNnk">
+
+        <!-- Directions -->
+        <directions ng-if="path && path.origin && path.destination && path.waypoints"
+                    draggable="false"
+                    travel-mode="BICYCLING"
+                    waypoints="{{path.waypoints}}"
+                    origin="{{path.origin}}"
+                    destination="{{path.destination}}"
+                    suppress-bicycling-layer="true">
         </directions>
       </ng-map>
 

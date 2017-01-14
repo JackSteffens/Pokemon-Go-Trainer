@@ -1,0 +1,318 @@
+{
+	"geocoded_waypoints": [{
+		"geocoder_status": "OK",
+		"place_id": "Ei5adWlkZXJtb2xlbndlZyAxLCAxMDY5IENFIEFtc3RlcmRhbSwgTmVkZXJsYW5k",
+		"types": ["street_address"]
+	},
+	{
+		"geocoder_status": "OK",
+		"place_id": "ChIJJ3GX-uHjxUcRXETYtgPmNnk",
+		"types": ["route"]
+	}],
+	"routes": [{
+		"bounds": {
+			"northeast": {
+				"lat": 52.360186,
+				"lng": 4.7861048
+			},
+			"southwest": {
+				"lat": 52.3502642,
+				"lng": 4.7791803
+			}
+		},
+		"copyrights": "Map data ©2017 Google",
+		
+		
+		"legs": [{
+			"distance": {
+				"text": "1.6 km",
+				"value": 1593
+			},
+			"duration": {
+				"text": "5 mins",
+				"value": 317
+			},
+			"end_address": "De Alpen, 1060 Amsterdam, Netherlands",
+			
+			
+			//////////////////// END FLAG
+			
+			"end_location": {
+				"lat": 52.35093759999999,
+				"lng": 4.7791803
+			},
+			
+			
+			"start_address": "Zuidermolenweg 1, 1069 CE Amsterdam, Netherlands",
+			
+			
+			
+			////////////////// START FLAG
+			
+			"start_location": {
+				"lat": 52.360186,
+				"lng": 4.7861048
+			},
+			
+			
+			////////////// START OF PATH
+			
+			"steps": [{
+				"distance": {
+					"text": "0.1 km",
+					"value": 136
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 20
+				},
+				"end_location": {
+					"lat": 52.3597891,
+					"lng": 4.7842064
+				},
+				"html_instructions": "Head <b>west</b> on <b>Zuidermolenweg</b> toward <b>Keurenplein</b>",
+				"polyline": {
+					"points": "erq~Hcxe\\b@bDLfANfALdA"
+				},
+				"start_location": {
+					"lat": 52.360186,
+					"lng": 4.7861048
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "0.4 km",
+					"value": 438
+				},
+				"duration": {
+					"text": "2 mins",
+					"value": 101
+				},
+				"end_location": {
+					"lat": 52.3560163,
+					"lng": 4.7860247
+				},
+				"html_instructions": "Turn <b>left</b> onto <b>Ingelandenweg</b>",
+				"maneuver": "turn-left",
+				"polyline": {
+					"points": "uoq~Hile\\n@Un@U^O^Mj@Wj@Ur@S\\KXGJ?NCdAe@rAk@NItCoA@?n@Y"
+				},
+				"start_location": {
+					"lat": 52.3597891,
+					"lng": 4.7842064
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "84 m",
+					"value": 84
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 15
+				},
+				"end_location": {
+					"lat": 52.3557496,
+					"lng": 4.784863
+				},
+				"html_instructions": "Turn <b>right</b> onto <b>Dijkgraafplein</b>",
+				"maneuver": "turn-right",
+				"polyline": {
+					"points": "cxp~Hswe\\Lp@NbADZHh@Fj@"
+				},
+				"start_location": {
+					"lat": 52.3560163,
+					"lng": 4.7860247
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "0.1 km",
+					"value": 111
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 22
+				},
+				"end_location": {
+					"lat": 52.3548069,
+					"lng": 4.785381699999999
+				},
+				"html_instructions": "Turn <b>left</b> onto <b>Akerwateringstraat</b>",
+				"maneuver": "turn-left",
+				"polyline": {
+					"points": "mvp~Hkpe\\|As@|As@"
+				},
+				"start_location": {
+					"lat": 52.3557496,
+					"lng": 4.784863
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "0.1 km",
+					"value": 109
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 13
+				},
+				"end_location": {
+					"lat": 52.354478,
+					"lng": 4.783873300000001
+				},
+				"html_instructions": "Turn <b>right</b> to stay on <b>Akerwateringstraat</b>",
+				"maneuver": "turn-right",
+				"polyline": {
+					"points": "qpp~Hsse\\ZzBZzBDXBZ"
+				},
+				"start_location": {
+					"lat": 52.3548069,
+					"lng": 4.785381699999999
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "49 m",
+					"value": 49
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 8
+				},
+				"end_location": {
+					"lat": 52.35408229999999,
+					"lng": 4.7837265
+				},
+				"html_instructions": "Turn <b>left</b> toward <b>Willy la Croixstraat</b>",
+				"maneuver": "turn-left",
+				"polyline": {
+					"points": "onp~Heje\\VIHAB?B?BBDBZ^"
+				},
+				"start_location": {
+					"lat": 52.354478,
+					"lng": 4.783873300000001
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "0.3 km",
+					"value": 334
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 54
+				},
+				"end_location": {
+					"lat": 52.3515729,
+					"lng": 4.7810292
+				},
+				"html_instructions": "Continue onto <b>Willy la Croixstraat</b>",
+				"polyline": {
+					"points": "_lp~Hiie\\LNJPd@d@d@f@PPNPTVTVPRNPVXVVTVVVd@d@d@f@d@j@f@j@RTRR"
+				},
+				"start_location": {
+					"lat": 52.35408229999999,
+					"lng": 4.7837265
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "68 m",
+					"value": 68
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 14
+				},
+				"end_location": {
+					"lat": 52.3512388,
+					"lng": 4.7818714
+				},
+				"html_instructions": "Turn <b>left</b> onto <b>Ernst Cahnsingel</b>",
+				"maneuver": "turn-left",
+				"polyline": {
+					"points": "i|o~Hmxd\\^sA`@sA"
+				},
+				"start_location": {
+					"lat": 52.3515729,
+					"lng": 4.7810292
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "0.1 km",
+					"value": 130
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 20
+				},
+				"end_location": {
+					"lat": 52.3502642,
+					"lng": 4.780825
+				},
+				"html_instructions": "Turn <b>right</b> onto <b>Nisserstraat</b>",
+				"maneuver": "turn-right",
+				"polyline": {
+					"points": "gzo~Hu}d\\b@d@FHDDNP~@bA`AdA"
+				},
+				"start_location": {
+					"lat": 52.3512388,
+					"lng": 4.7818714
+				},
+				"travel_mode": "BICYCLING"
+			},
+			{
+				"distance": {
+					"text": "0.1 km",
+					"value": 134
+				},
+				"duration": {
+					"text": "1 min",
+					"value": 50
+				},
+				"end_location": {
+					"lat": 52.35093759999999,
+					"lng": 4.7791803
+				},
+				"html_instructions": "Turn <b>right</b> onto <b>De Alpen</b>/<b>s107</b><div style=\"font-size:0.9em\">Destination will be on the right</div>",
+				"maneuver": "turn-right",
+				"polyline": {
+					"points": "cto~Hcwd\\{AzEk@jB"
+				},
+				"start_location": {
+					"lat": 52.3502642,
+					"lng": 4.780825
+				},
+				"travel_mode": "BICYCLING"
+			}],
+			
+			
+			
+			/////////////// END OF PATH
+			
+			
+			
+			
+			
+			"traffic_speed_entry": [],
+			"via_waypoint": []
+		}],
+		"overview_polyline": {
+			"points": "erq~Hcxe\\nAxJ~CiAvAm@pA_@d@GNCdAe@bBu@vCoAn@YLp@T~APtAzDgB`AlH`@KF?r@v@vDfE~ElFz@`ARR^sA`@sAb@d@LNnAtA`AdA{AzEk@jB"
+		},
+		"summary": "Ingelandenweg",
+		"warnings": ["Bicycling directions are in beta. Use caution – This route may contain streets that aren't suited for bicycling."],
+		"waypoint_order": []
+	}],
+	"status": "OK"
+}

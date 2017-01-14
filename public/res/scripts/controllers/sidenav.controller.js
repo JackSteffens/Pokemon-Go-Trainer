@@ -14,9 +14,20 @@ function($scope, $mdSidenav, TrainerService) {
       $scope.trainers = trainers;
     }, true);
 
+    // Watcher on tabs index. Switching tabs selects a trainer.
     $scope.$watch('selectedCharacterIndex', function(newVal, oldVal) {
       if (oldVal != newVal) {
         selectTrainer(newVal)
+      }
+    }, true);
+
+    // Watcher on getOnlineTrainers for auto selecting the first login.
+    $scope.$watch(function() {
+      return TrainerService.getOnlineTrainers().length;
+    }, function(newVal, oldVal) {
+      if (!oldVal && newVal > 0) {
+        console.log('selectTrainer() because first login');
+        selectTrainer($scope.selectedCharacterIndex);
       }
     }, true);
   }
