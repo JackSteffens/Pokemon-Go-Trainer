@@ -1,15 +1,46 @@
 syntax = "proto3";
 package POGOProtos.Settings.Master;
 
+import public "POGOProtos.Data.Player.proto";
 import public "POGOProtos.Enums.proto";
+import public "POGOProtos.Data.Badge.proto";
 import public "POGOProtos.Inventory.Item.proto";
 import public "POGOProtos.Settings.Master.Item.proto";
 import public "POGOProtos.Settings.Master.Pokemon.proto";
+import public "POGOProtos.Settings.Master.Quest.proto";
 
+message AvatarCustomizationSettings {
+	bool enabled = 1;
+	.POGOProtos.Data.Player.PlayerAvatarType avatar_type = 2;
+	repeated .POGOProtos.Enums.Slot slot = 3;
+	string bundle_name = 4;
+	string asset_name = 5;
+	string group_name = 6;
+	int32 sort_order = 7;
+	AvatarCustomizationUnlockType unlock_type = 8;
+	repeated AvatarCustomizationPromoType promo_type = 9;
+	.POGOProtos.Enums.BadgeType unlock_badge_type = 10;
+	int32 unlock_badge_level = 12;
+	string iap_sku = 11;
+
+	enum AvatarCustomizationPromoType {
+		UNSET_PROMO_TYPE = 0;
+		SALE = 1;
+		FEATURED = 2;
+	}
+
+	enum AvatarCustomizationUnlockType {
+		UNSET_UNLOCK_TYPE = 0;
+		DEFAULT = 1;
+		MEDAL_REWARD = 2;
+		IAP_CLOTHING = 3;
+	}
+}
 message BadgeSettings {
 	.POGOProtos.Enums.BadgeType badge_type = 1;
 	int32 badge_rank = 2;
 	repeated int32 targets = 3;
+	repeated .POGOProtos.Data.Badge.BadgeCaptureReward capture_reward = 4;
 }
 message CameraSettings {
 	string next_camera = 1;
@@ -56,6 +87,7 @@ message GymBattleSettings {
 	int32 dodge_duration_ms = 12;
 	int32 minimum_player_level = 13;
 	int32 swap_duration_ms = 14;
+	float dodge_damage_reduction_percent = 15;
 }
 message GymLevelSettings {
 	repeated int32 required_experience = 1;
@@ -103,7 +135,7 @@ message MoveSequenceSettings {
 	repeated string sequence = 1;
 }
 message MoveSettings {
-	.POGOProtos.Enums.PokemonMovementType movement_id = 1;
+	.POGOProtos.Enums.PokemonMove movement_id = 1;
 	int32 animation_id = 2;
 	.POGOProtos.Enums.PokemonType pokemon_type = 3;
 	float power = 4;
@@ -148,12 +180,27 @@ message PokemonSettings {
 	float km_distance_to_hatch = 20;
 	.POGOProtos.Enums.PokemonFamilyId family_id = 21;
 	int32 candy_to_evolve = 22;
+	float km_buddy_distance = 23;
+	.POGOProtos.Settings.Master.PokemonSettings.BuddySize buddy_size = 24;
+	float model_height = 25;
+
+	enum BuddySize {
+		BUDDY_MEDIUM = 0;
+		BUDDY_SHOULDER = 1;
+		BUDDY_BIG = 2;
+		BUDDY_FLYING = 3;
+		BUDDY_BABY = 4;
+	}
 }
 message PokemonUpgradeSettings {
 	int32 upgrades_per_level = 1;
 	int32 allowed_levels_above_player = 2;
 	repeated int32 candy_cost = 3;
 	repeated int32 stardust_cost = 4;
+}
+message QuestSettings {
+	.POGOProtos.Enums.QuestType quest_type = 1;
+	.POGOProtos.Settings.Master.Quest.DailyQuestSettings daily_quest = 2;
 }
 message TypeEffectiveSettings {
 	repeated float attack_scalar = 1;

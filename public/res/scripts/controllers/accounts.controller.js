@@ -2,19 +2,19 @@ angular.module('pogobot').controller('AccountsCtrl',
 function($scope, $rootScope, $http, $mdDialog, Api) {
   // Scope variables
   $rootScope.currentUI = 'accounts';
-  $scope.accounts = {};
+  $scope.trainers = {};
 
   // Scope functions
   $scope.loginPopup = loginPopup;
-  $scope.getAccounts = getAccounts;
+  $scope.getTrainers = getTrainers;
   $scope.getAvailableTrainers = getAvailableTrainers;
 
-  function getAccounts() {
+  function getTrainers() {
     $http({
       method: 'GET',
       url: Api.url.trainer
     }).then(function successCallback(response) {
-      $scope.accounts = response.data;
+      $scope.trainers = response.data;
     }, function errorCallback(response) {
       console.log('An error occured');
       console.log(response);
@@ -35,7 +35,7 @@ function($scope, $rootScope, $http, $mdDialog, Api) {
   function loginPopup(event, account) {
     $mdDialog.show({
       controller: 'loginCtrl',
-      templateUrl: './res/views/login.dialog.html',
+      templateUrl: './res/views/dialogs/login.dialog.html',
       parent: angular.element(document.body),
       targetEvent: event,
       clickOutsideToClose: false,
@@ -47,9 +47,9 @@ function($scope, $rootScope, $http, $mdDialog, Api) {
         }
       }
     }).then(function successCallback() {
-      getAccounts();
+      getTrainers();
     });
   }
   // Start
-  getAccounts();
+  getTrainers();
 });

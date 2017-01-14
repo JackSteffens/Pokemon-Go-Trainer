@@ -14,10 +14,20 @@ import public "POGOProtos.Map.Fort.proto";
 import public "POGOProtos.Inventory.Item.proto";
 import public "POGOProtos.Inventory.proto";
 import public "POGOProtos.Map.proto";
+import public "POGOProtos.Data.Avatar.proto";
 import public "POGOProtos.Data.Logs.proto";
 
 message AddFortModifierResponse {
-	// Initialized by assist.py
+	.POGOProtos.Networking.Responses.AddFortModifierResponse.Result result = 1;
+	.POGOProtos.Networking.Responses.FortDetailsResponse fort_details = 2;
+
+	enum Result {
+		NO_RESULT_SET = 0;
+		SUCCESS = 1;
+		FORT_ALREADY_HAS_MODIFIER = 2;
+		TOO_FAR_AWAY = 3;
+		NO_ITEM_IN_INVENTORY = 4;
+	}
 }
 message AttackGymResponse {
 	.POGOProtos.Networking.Responses.AttackGymResponse.Result result = 1;
@@ -26,18 +36,20 @@ message AttackGymResponse {
 	.POGOProtos.Data.Battle.BattlePokemonInfo active_defender = 4;
 	.POGOProtos.Data.Battle.BattlePokemonInfo active_attacker = 5;
 
-    enum Result {
+	enum Result {
 		UNSET = 0;
 		SUCCESS = 1;
 		ERROR_INVALID_ATTACK_ACTIONS = 2;
 		ERROR_NOT_IN_RANGE = 3;
-    }
+	}
 }
 message CatchPokemonResponse {
 	.POGOProtos.Networking.Responses.CatchPokemonResponse.CatchStatus status = 1;
 	double miss_percent = 2;
 	fixed64 captured_pokemon_id = 3;
 	.POGOProtos.Data.Capture.CaptureAward capture_award = 4;
+	.POGOProtos.Networking.Responses.CatchPokemonResponse.CaptureReason capture_reason = 5;
+	int32 display_pokedex_id = 6;
 
 	enum CatchStatus {
 		CATCH_ERROR = 0;
@@ -46,11 +58,22 @@ message CatchPokemonResponse {
 		CATCH_FLEE = 3;
 		CATCH_MISSED = 4;
 	}
+
+	enum CaptureReason {
+		UNSET = 0;
+		DEFAULT = 1;
+		ELEMENTAL_BADGE = 2;
+	}
 }
 message CheckAwardedBadgesResponse {
 	bool success = 1;
 	repeated .POGOProtos.Enums.BadgeType awarded_badges = 2;
 	repeated int32 awarded_badge_levels = 3;
+	repeated string avatar_template_ids = 4;
+}
+message CheckChallengeResponse {
+	bool show_challenge = 1;
+	string challenge_url = 2;
 }
 message CheckCodenameAvailableResponse {
 	string codename = 1;
@@ -72,6 +95,7 @@ message ClaimCodenameResponse {
 	string user_message = 2;
 	bool is_assignable = 3;
 	.POGOProtos.Networking.Responses.ClaimCodenameResponse.Status status = 4;
+	.POGOProtos.Data.PlayerData updated_player = 5;
 
 	enum Status {
 		UNSET = 0;
@@ -121,9 +145,10 @@ message DiskEncounterResponse {
 	}
 }
 message DownloadItemTemplatesResponse {
-	bool success = 1;
+	Result result = 1;
 	repeated .POGOProtos.Networking.Responses.DownloadItemTemplatesResponse.ItemTemplate item_templates = 2;
 	uint64 timestamp_ms = 3;
+	int32 page_offset = 4;
 
 	message ItemTemplate {
 		string template_id = 1;
@@ -132,7 +157,7 @@ message DownloadItemTemplatesResponse {
 		.POGOProtos.Settings.Master.MoveSettings move_settings = 4;
 		.POGOProtos.Settings.Master.MoveSequenceSettings move_sequence_settings = 5;
 		.POGOProtos.Settings.Master.TypeEffectiveSettings type_effective = 8;
-		.POGOProtos.Settings.Master.BadgeSettings badge_settings = 10; 
+		.POGOProtos.Settings.Master.BadgeSettings badge_settings = 10;
 		.POGOProtos.Settings.Master.CameraSettings camera = 11;
 		.POGOProtos.Settings.Master.PlayerLevelSettings player_level = 12;
 		.POGOProtos.Settings.Master.GymLevelSettings gym_level = 13;
@@ -142,11 +167,20 @@ message DownloadItemTemplatesResponse {
 		.POGOProtos.Settings.Master.IapSettings iap_settings = 17;
 		.POGOProtos.Settings.Master.PokemonUpgradeSettings pokemon_upgrades = 18;
 		.POGOProtos.Settings.Master.EquippedBadgeSettings equipped_badges = 19;
+		.POGOProtos.Settings.Master.QuestSettings quest_settings = 20;
+		.POGOProtos.Settings.Master.AvatarCustomizationSettings avatar_customization = 21;
+	}
+
+	enum Result {
+		UNSET = 0;
+		SUCCESS = 1;
+		PAGE = 2;
+		RETRY = 3;
 	}
 }
 message DownloadRemoteConfigVersionResponse {
 	.POGOProtos.Networking.Responses.DownloadRemoteConfigVersionResponse.Result result = 1;
-	uint64 item_templates_timestamp_ms = 2; // Latest available?
+	uint64 item_templates_timestamp_ms = 2;  // Latest available?
 	uint64 asset_digest_timestamp_ms = 3;
 
 	enum Result {
@@ -237,6 +271,9 @@ message FortDeployPokemonResponse {
 		ERROR_PLAYER_HAS_NO_TEAM = 6;
 		ERROR_POKEMON_NOT_FULL_HP = 7;
 		ERROR_PLAYER_BELOW_MINIMUM_LEVEL = 8;
+		ERROR_POKEMON_IS_BUDDY = 9;
+		ERROR_FORT_DEPLOY_LOCKOUT = 10;
+		ERROR_PLAYER_HAS_NO_NICKNAME = 11;
 	}
 }
 message FortDetailsResponse {
@@ -281,11 +318,17 @@ message FortSearchResponse {
 		OUT_OF_RANGE = 2;
 		IN_COOLDOWN_PERIOD = 3;
 		INVENTORY_FULL = 4;
+		EXCEEDED_DAILY_LIMIT = 5;
 	}
 }
 message GetAssetDigestResponse {
 	repeated .POGOProtos.Data.AssetDigestEntry digest = 1;
 	uint64 timestamp_ms = 2;
+}
+message GetBuddyWalkedResponse {
+	bool success = 1;
+	.POGOProtos.Enums.PokemonFamilyId family_candy_id = 2;
+	int32 candy_earned_count = 3;
 }
 message GetDownloadUrlsResponse {
 	repeated .POGOProtos.Data.DownloadUrlEntry download_urls = 1;
@@ -294,8 +337,9 @@ message GetGymDetailsResponse {
 	.POGOProtos.Data.Gym.GymState gym_state = 1;
 	string name = 2;
 	repeated string urls = 3;
-	POGOProtos.Networking.Responses.GetGymDetailsResponse.Result result = 4;
+	.POGOProtos.Networking.Responses.GetGymDetailsResponse.Result result = 4;
 	string description = 5;
+	repeated string secondary_url = 6;
 
 	enum Result {
 		UNSET = 0;
@@ -305,10 +349,11 @@ message GetGymDetailsResponse {
 }
 message GetHatchedEggsResponse {
 	bool success = 1;
-	repeated fixed64 pokemon_id = 2 [packed=true];
+	repeated fixed64 pokemon_id = 2 [packed = true];
 	repeated int32 experience_awarded = 3;
 	repeated int32 candy_awarded = 4;
 	repeated int32 stardust_awarded = 5;
+	repeated float egg_km_walked = 6;
 }
 message GetIncensePokemonResponse {
 	.POGOProtos.Networking.Responses.GetIncensePokemonResponse.Result result = 1;
@@ -318,6 +363,7 @@ message GetIncensePokemonResponse {
 	string encounter_location = 5;
 	fixed64 encounter_id = 6;
 	int64 disappear_timestamp_ms = 7;
+	.POGOProtos.Data.PokemonDisplay pokemon_display = 8;
 
 	enum Result {
 		INCENSE_ENCOUNTER_UNKNOWN = 0;
@@ -332,6 +378,13 @@ message GetInventoryResponse {
 message GetMapObjectsResponse {
 	repeated .POGOProtos.Map.MapCell map_cells = 1;
 	.POGOProtos.Map.MapObjectsStatus status = 2;
+	TimeOfDay time_of_day = 3;
+
+	enum TimeOfDay {
+		NONE = 0;
+		DAY = 1;
+		NIGHT = 2;
+	}
 }
 message GetPlayerProfileResponse {
 	.POGOProtos.Networking.Responses.GetPlayerProfileResponse.Result result = 1;
@@ -346,10 +399,8 @@ message GetPlayerProfileResponse {
 message GetPlayerResponse {
 	bool success = 1;
 	.POGOProtos.Data.PlayerData player_data = 2;
-}
-message GetSuggestedCodenamesResponse {
-	repeated string codenames = 1;
-	bool success = 2;
+	bool banned = 3;
+	bool warn = 4;
 }
 message IncenseEncounterResponse {
 	.POGOProtos.Networking.Responses.IncenseEncounterResponse.Result result = 1;
@@ -372,6 +423,16 @@ message LevelUpRewardsResponse {
 		UNSET = 0;
 		SUCCESS = 1;
 		AWARDED_ALREADY = 2;
+	}
+}
+message ListAvatarCustomizationsResponse {
+	Result result = 1;
+	.POGOProtos.Data.Avatar.AvatarCustomization avatar_customizations = 2;
+
+	enum Result {
+		UNSET = 0;
+		SUCCESS = 1;
+		FAILURE = 2;
 	}
 }
 message MarkTutorialCompleteResponse {
@@ -405,6 +466,16 @@ message RecycleInventoryItemResponse {
 		ERROR_CANNOT_RECYCLE_INCUBATORS = 3;
 	}
 }
+message RegisterBackgroundDeviceResponse {
+	Status status = 1;
+	.POGOProtos.Data.BackgroundToken token = 2;
+
+	enum Status {
+		UNSET = 0;
+		SUCCESS = 1;
+		ERROR = 2;
+	}
+}
 message ReleasePokemonResponse {
 	.POGOProtos.Networking.Responses.ReleasePokemonResponse.Result result = 1;
 	int32 candy_awarded = 2;
@@ -415,6 +486,16 @@ message ReleasePokemonResponse {
 		POKEMON_DEPLOYED = 2;
 		FAILED = 3;
 		ERROR_POKEMON_IS_EGG = 4;
+		ERROR_POKEMON_IS_BUDDY = 5;
+	}
+}
+message SetAvatarItemAsViewedResponse {
+	Result result = 1;
+
+	enum Result {
+		UNSET = 0;
+		SUCCESS = 1;
+		FAILURE = 2;
 	}
 }
 message SetAvatarResponse {
@@ -426,6 +507,21 @@ message SetAvatarResponse {
 		SUCCESS = 1;
 		AVATAR_ALREADY_SET = 2;
 		FAILURE = 3;
+		SLOT_NOT_ALLOWED = 4;
+		ITEM_NOT_OWNED = 5;
+		INVALID_AVATAR_TYPE = 6;
+	}
+}
+message SetBuddyPokemonResponse {
+	.POGOProtos.Networking.Responses.SetBuddyPokemonResponse.Result result = 1;
+	.POGOProtos.Data.BuddyPokemon updated_buddy = 2;
+
+	enum Result {
+		UNEST = 0;
+		SUCCESS = 1;
+		ERROR_POKEMON_DEPLOYED = 2;
+		ERROR_POKEMON_NOT_OWNED = 3;
+		ERROR_POKEMON_IS_EGG = 4;
 	}
 }
 message SetContactSettingsResponse {
@@ -475,6 +571,7 @@ message StartGymBattleResponse {
 	string battle_id = 4;
 	.POGOProtos.Data.Battle.BattleParticipant defender = 5;
 	.POGOProtos.Data.Battle.BattleLog battle_log = 6;
+	.POGOProtos.Data.Battle.BattleParticipant attacker = 7;
 
 	enum Result {
 		UNSET = 0;
@@ -543,8 +640,8 @@ message UseItemEggIncubatorResponse {
 	}
 }
 message UseItemGymResponse {
-	POGOProtos.Networking.Responses.UseItemGymResponse.Result result = 1;
-	int64 updated_gp = 2; // Gym Points (?)
+	.POGOProtos.Networking.Responses.UseItemGymResponse.Result result = 1;
+	int64 updated_gp = 2;  // Gym Points (?)
 
 	enum Result {
 		UNSET = 0;
@@ -589,4 +686,7 @@ message UseItemXpBoostResponse {
 		ERROR_NO_ITEMS_REMAINING = 4;
 		ERROR_LOCATION_UNSET = 5;
 	}
+}
+message VerifyChallengeResponse {
+	bool success = 1;
 }

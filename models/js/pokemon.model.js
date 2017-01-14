@@ -32,7 +32,9 @@ var Pokemon = new Schema({
 	additional_cp_multiplier: {type:Number, required:true},  // CP Multiplier alters ??
 	favorite: {type:Number, required:true},    // Is favorite (why not a bool?)
 	nickname: {type:String, required:false},   // Nickname
-	from_fort: {type:Number, required:true}    // ??
+	from_fort: {type:Number, required:true},    // Might mean that it's caught at a pokestop (fort) with lures
+	buddy_candy_awarded: {type:Number, required:false}, // Candy awarded as buddy
+	buddy_total_km_walked: {type:Number, required:false} // KM walked as buddy {Float}
 });
 
 var PokemonTeam = new Schema({

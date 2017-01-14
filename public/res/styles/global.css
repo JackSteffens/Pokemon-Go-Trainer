@@ -112,11 +112,11 @@ md-menu-item>a>span {
   }
 }
 
-.account-profile-card {
+.trainer-profile-card {
   border-radius: 2px;
 }
 
-.account-profile-card-nav {
+.trainer-profile-card-nav {
 }
 
 .grid-tile-container {
@@ -128,7 +128,7 @@ md-menu-item>a>span {
   color: white;
 }
 
-.account-profile-card-image{
+.trainer-profile-card-image{
   background-image: url('/res/images/character.png');
   background-size: cover;
   background-position: top right;
@@ -138,13 +138,13 @@ md-menu-item>a>span {
   width: 75%;
 }
 
-.account-profile-card>figure>md-grid-tile-footer {
+.trainer-profile-card>figure>md-grid-tile-footer {
   border-bottom-left-radius: 2px;
   border-bottom-right-radius: 2px;
 }
 
-.account-profile-card>figure>md-grid-tile-footer>figcaption,
-.account-profile-card-nav>figure>md-grid-tile-footer>figcaption {
+.trainer-profile-card>figure>md-grid-tile-footer>figcaption,
+.trainer-profile-card-nav>figure>md-grid-tile-footer>figcaption {
   width: 100%;
   height: 100%;
 }

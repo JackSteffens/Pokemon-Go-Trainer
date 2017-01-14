@@ -41,9 +41,9 @@ function api_req(trainerObj, requestType, callback, responseType) {
     requests: requestType,
     latitude: parseFloat(trainerObj.location.latitude),
     longitude: parseFloat(trainerObj.location.longitude),
-    altitude: parseFloat(trainerObj.location.altitude),
+    accuracy: parseFloat(trainerObj.location.accuracy),
     auth_info: auth,
-    unknown12: 989
+    ms_since_last_locationfix: 989
   });
 
   var options = {

@@ -11,10 +11,10 @@
   <md-tab label="{{name}}" ng-repeat="name in names">
     <md-content class="sidenav-user">
       <md-grid-list md-cols="1" md-row-height="1:1">
-        <md-grid-tile class="account-profile-card-nav">
+        <md-grid-tile class="trainer-profile-card-nav">
           <!-- Image -->
           <md-content md-theme="mysticBackground" class="grid-tile-container md-hue-2">
-            <div class="account-profile-card-image" layout="column" layout-align="start end">
+            <div class="trainer-profile-card-image" layout="column" layout-align="start end">
               <md-button md-theme="mystic" class="md-icon-button md-raised" style="top:1em; float:right; right:-1.5em;">
                 <md-icon class="material-icons">
                   exit_to_app
@@ -54,7 +54,7 @@
   <md-content>
     <md-menu-content style="padding-top:0;">
       <!-- Character specific pages -->
-      <!-- Only show when 1 or more accounts are registered -->
+      <!-- Only show when 1 or more trainers are registered -->
       <div>
         <md-menu-item>
           <md-button ui-sref="character({user: names[selectedCharacterIndex]})" ng-click="closeSidenav()" ui-sref-active="selected">

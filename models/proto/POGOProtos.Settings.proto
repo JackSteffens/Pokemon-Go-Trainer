@@ -5,6 +5,20 @@ package POGOProtos.Settings;
 message DownloadSettingsAction {
 	string hash = 1;
 }
+message EventSettings {
+	repeated string condolence_ribbon_country = 1;
+}
+message FestivalSettings {
+	FestivalType festival_type = 1;
+	string key = 2;
+	string vector = 3;
+
+	enum FestivalType {
+		NONE = 0;
+		HALLOWEEN = 1;
+		HOLIDAY = 2;
+	}
+}
 message FortSettings {
 	double interaction_range_meters = 1;
 	int32 max_total_deployed_pokemon = 2;
@@ -19,6 +33,17 @@ message GlobalSettings {
 	.POGOProtos.Settings.LevelSettings level_settings = 4;
 	.POGOProtos.Settings.InventorySettings inventory_settings = 5;
 	string minimum_client_version = 6;
+	.POGOProtos.Settings.GpsSettings gps_settings = 7;
+	.POGOProtos.Settings.FestivalSettings festival_settings = 8;
+	.POGOProtos.Settings.EventSettings event_settings = 9;
+	int32 max_pokemon_types = 10;
+	.POGOProtos.Settings.SfidaSettings sfida_settings = 11;
+}
+message GpsSettings {
+	float driving_warning_speed_meters_per_second = 1;
+	float driving_warning_cooldown_minutes = 2;
+	float driving_speed_sample_interval_seconds = 3;
+	int32 driving_speed_sample_count = 4;
 }
 message InventorySettings {
 	int32 max_pokemon = 1;
@@ -39,4 +64,8 @@ message MapSettings {
 	float get_map_objects_max_refresh_seconds = 5;
 	float get_map_objects_min_distance_meters = 6;
 	string google_maps_api_key = 7;
+	int32 min_nearby_hide_sightings = 8;
+}
+message SfidaSettings {
+	float low_battery_threshold = 1;
 }

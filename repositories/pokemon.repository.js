@@ -33,8 +33,8 @@ function updatePokemonTeam(username, team, callback) {
     {'pokemons':team},
     {runValidators:true, new:true},
     function(error, newTeam) {
-      if (error) console.log(('[!] Error updating team \n'+error).red);
-      else if (newTeam) console.log('[i] Updated team for : '+username);
+      if (error) console.log(('[!] Error updating pokemon team \n'+error).red);
+      else if (newTeam) console.log('[i] Updated pokemon team for : '+username);
       return callback(error, newTeam);
     }
   );
@@ -51,8 +51,8 @@ function createPokemonTeam(username, team, callback) {
   Pokemon.create(
     {'owner':username, 'pokemons':team},
     function(error, newTeam) {
-      if (error) console.log(('[!] Error creating team \n'+error).red);
-      else console.log('[i] Created team for : '+username);
+      if (error) console.log(('[!] Error creating pokemon team \n'+error).red);
+      else console.log('[i] Created pokemon team for : '+username);
       return callback(error, newTeam);
     }
   );

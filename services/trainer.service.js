@@ -1,11 +1,12 @@
 // Dependencies
-var path = require('path');
-var config = require('../config.js');
-var CustomAPI = require('../CustomAPI.js');
-var request = require('request');         // HTTP requests
-var protobuf = require('protobufjs');     // Decoding responses using .proto
-var GoogleOAuth = require('gpsoauthnode');// Google authentication
-var Long = require('long')                // Long for date timestamps
+var path = require('path');                 // Path resolver
+var config = require('../config.js');       // Configuration
+var CustomAPI = require('../CustomAPI.js'); // Niantic API
+var request = require('request');           // HTTP requests
+var protobuf = require('protobufjs');       // Decoding responses using .proto
+var GoogleOAuth = require('gpsoauthnode');  // Google authentication
+var Long = require('long')                  // Long for date timestamps
+var colors = require('colors');             // Console collors
 
 // Repositories
 var trainerRepo = require(path.resolve(__dirname+'/../repositories/trainer.repository.js'));
@@ -24,36 +25,11 @@ request = request.defaults({jar: request.jar()}); // For some reason this shit i
 /**
 * Authenticate on the Niantic servers using the identification tokens
 * from the handshake request and character credentials given by the user.
-* @param String err, errors from the request function
-* @param String response, response from the request function
-* @param Object {body} , body from the request function
+* @param Object {data} , contains String {data.lt} & String {data.execution}
 * @param Object {credentials} , contains data equired for authentication
 * @param Function callback(Error error, Trainer trainerObj), post login & error handling function
 */
-function ptcHandshakeCallback(err, response, body, credentials, callback) {
-  if (err) {return callback(err);}
-
-  var data;
-  try {
-    // FIXME This fucks up after logging in for a second time.
-    // Check if we need to logout externally from Niantic's servers
-
-    // Detect if this is valid JSON
-    if (/^[\],:{}\s]*$/.test(body.replace(/\\["\\\/bfnrtu]/g, '@').
-    replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
-    replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
-      data = JSON.parse(body);
-    } else {
-      return callback(new Error('Response was not valid JSON. Restart the server.'))
-    }
-  }catch(err){
-    if (!data) {
-      return callback(err);
-    } else {
-      return callback(data);
-    }
-  }
-  console.log('[i] First request successful.');
+function ptcHandshakeCallback(data, credentials, callback) {
   options = {
     url: config.LOGIN_URL,
     form: {
@@ -141,7 +117,7 @@ function postTokenCallback(authObjects, credentials, callback) {
     location: {
       latitude: parseFloat(credentials.latitude),
       longitude: parseFloat(credentials.longitude),
-      altitude: parseFloat(credentials.altitude)
+      accuracy: 0
     }
   }
   getApiEndpoint(trainerObj, function(error, trainerObj) {
@@ -155,17 +131,17 @@ function postTokenCallback(authObjects, credentials, callback) {
       // Fetching badges
       fetchProfile(trainerObj, function(error, badges) {
         if (error)
-          console.log('[!] Error fetching trainer profile :'+error);
+          console.log(('[!] Error fetching trainer profile :'+error).red);
         else if (badges)
           storeProfile(trainerObj, badges.badges);
         else
-          console.log('[!] No badges returned from Niantic server')
+          console.log(('[!] No badges returned from Niantic server').red)
       });
 
       // Fetching inventory
       fetchInventory(trainerObj, function(error, inventory) {
         if (error) {
-          console.log('[!] Error fetching inventory :'+error);
+          console.log(('[!] Error fetching inventory :'+error).red);
         } else if (inventory) {
           console.log('[i] Inventory received.');
           var original_timestamp = new Date(
@@ -224,7 +200,7 @@ function postTokenCallback(authObjects, credentials, callback) {
           // storeEggIncubators(trainerObj, incubators);
           console.log('[i] inventory count : ['+inventory.length+']');
         } else {
-          console.log('[!] No inventory received')
+          console.log(('[!] No inventory received').red)
         }
       });
       // Storing fetched base Trainer object
@@ -366,7 +342,9 @@ function parsePokemonTeam(team) {
     	additional_cp_multiplier: team[i].additional_cp_multiplier,
     	favorite: team[i].favorite,
     	nickname: team[i].nickname,
-    	from_fort: team[i].from_fort
+    	from_fort: team[i].from_fort,
+      buddy_candy_awarded: team[i].buddy_candy_awarded,
+      buddy_total_km_walked: team[i].buddy_total_km_walked
     }
     team[i] = pokemon;
   }
@@ -556,7 +534,7 @@ function getApiEndpoint(trainerObj, callback) {
 /**
 * Log in on the Niantic servers using a PTC account
 * Fetch unique login identification using initial handshake request
-* @param Object {credentials} , String username, String password, String provider, Float latitude, Float longitude, Float altitude
+* @param Object {credentials} , String username, String password, String provider, Float latitude, Float longitude, Float accuracy
 * @param callback(Error error, Trainer trainerObj) , return function.
 * @return callback(Error error, Trainer trainerObj) , error and response handler
 */
@@ -566,9 +544,21 @@ function pokemonClub(credentials, callback) {
    headers: config.REQ_HEADERS
  };
 
- console.log('[!] First request : Handshake')
  request.get(options, function(err, response, body) {
-   ptcHandshakeCallback(err, response, body, credentials, callback);
+   if (err) {return callback(err);}
+   var data;
+   // FIXME This fucks up after logging in for a second time.
+   // Check if we need to logout externally from Niantic's servers
+   // Detect if this is valid JSON
+   if (/^[\],:{}\s]*$/.test(body.replace(/\\["\\\/bfnrtu]/g, '@').
+   replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+   replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+     data = JSON.parse(body);
+   } else {
+     return callback(new Error('Response was not valid JSON. Restart the server.'))
+   }
+   console.log('[i] First request successful.');
+   ptcHandshakeCallback(data, credentials, callback);
  });
 }
 
@@ -577,7 +567,7 @@ function pokemonClub(credentials, callback) {
 * a token for the Niantic API server.
 * CAUTION: DOES NOT WORK WITH TWO-FACTOR AUTHENTICATION. Requires a Google ASP
 * ASPs can be generated here : https://security.google.com/settings/security/apppasswords
-* @param Object {credentials} , String Gmail, String password, String provider, Float latitude, Float longitude, Float altitude
+* @param Object {credentials} , String Gmail, String password, String provider, Float latitude, Float longitude, Float accuracy
 * @param callback(Error error, Trainer trainerObj) , return function.
 * @return callback(Error error, Trainer trainerObj) , error and response handler
 */
@@ -589,15 +579,15 @@ function googleOAuth(credentials, callback) {
     }
   google.login(credentials.username, credentials.password, config.ANDROID_ID, function(error, data) {
     if (error) {
-      console.log('[#] Error logging into Google services')
+      console.log(('[!] Error logging into Google services').red)
       return callback(error);
     } else if (data) {
       google.oauth(credentials.username, data.masterToken, data.androidId, config.OAUTH_SERVICE, config.APP, config.CLIENT_SIG, function(error, data) {
         if (error) {
-          console.log('[#] Error retrieving oauth data from Google services')
+          console.log(('[!] Error retrieving oauth data from Google services').red)
           return callback(error);
         }
-        console.log('[!] Google login succesfull');
+        console.log('[i] Google login succesfull');
         authObjects.token = data.Auth;
         postTokenCallback(authObjects, credentials, callback);
       })

@@ -8,8 +8,7 @@ function($scope, $timeout, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api,
       password: "",
       provider: $scope.trainerObj.login.provider,
       latitude: parseFloat($scope.trainerObj.location.latitude),
-      longitude: parseFloat($scope.trainerObj.location.longitude),
-      altitude: parseFloat($scope.trainerObj.location.altitude)
+      longitude: parseFloat($scope.trainerObj.location.longitude)
     }
   } else {
     $scope.authObj = {
@@ -17,8 +16,7 @@ function($scope, $timeout, $rootScope, $mdDialog, $http, trainerObj, NgMap, Api,
       password: "",
       provider: "",
       latitude: parseFloat(52.359),
-      longitude: parseFloat(4.7816),
-      altitude: parseFloat(-1.07)
+      longitude: parseFloat(4.7816)
     }
   }
 

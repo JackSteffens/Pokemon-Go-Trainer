@@ -1,6 +1,7 @@
 // Dependencies
 var config = require("../config.js");
 var trainerService = require('../services/trainer.service.js');
+var colors = require('colors');
 
 /**
 * Get all known trainers from database. If a username is given then only return
@@ -54,7 +55,7 @@ function login(req, res) {
     provider : req.body.provider,
     latitude : parseFloat(req.body.latitude),
     longitude: parseFloat(req.body.longitude),
-    altitude : parseFloat(req.body.altitude)
+    accuracy : 1
   }
 
   if (credentials.username == undefined || credentials.password == undefined) {
@@ -66,7 +67,7 @@ function login(req, res) {
     console.log('[i] Logging in as : '+credentials.username+' on Pokémon Trading club');
     trainerService.pokemonClub(credentials, function(err, trainerObj) {
       if (err) {
-        console.log("[!] Error : "+err);
+        console.log(("[!] Error : "+err).red);
         res.status('400');
         return res.send(err);
       }
@@ -76,7 +77,7 @@ function login(req, res) {
     console.log('[i] Logging in as : '+credentials.username+' on Google');
     trainerService.googleOAuth(credentials, function (err, trainerObj) {
       if (err) {
-        console.log("[!] Error : "+err);
+        console.log(("[!] Error : "+err).red);
         res.status('400');
         try {
           return res.send(err);
@@ -100,7 +101,6 @@ function login(req, res) {
 function logout(req, res) {
   var username = req.query.username;
   if (!username) {
-    console.log('[#] No username supplied.');
     res.status('400');
     return res.send('No username supplied');
   }
