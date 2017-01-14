@@ -4,7 +4,7 @@ var Pokemon = require(path.resolve(__dirname+'/../models/js/pokemon.model.js')).
 var colors = require('colors');
 
 /**
-* Fetch Pokemons by Trainer username
+* Find Pokemons by Trainer username
 * @param String username , unique ID
 * @param Function callback(error, team)
 * @return callback(Error error, PokemonTeam team)

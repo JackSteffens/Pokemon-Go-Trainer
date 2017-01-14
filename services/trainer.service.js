@@ -13,6 +13,7 @@ var pokemonRepo = require(path.resolve(__dirname+'/../repositories/pokemon.repos
 var badgeRepo = require(path.resolve(__dirname+'/../repositories/badge.repository.js'));
 var inventoryRepo = require(path.resolve(__dirname+'/../repositories/inventory.repository.js'));
 var pokedexRepo = require(path.resolve(__dirname+'/../repositories/pokedex.repository.js'));
+var candyRepo = require(path.resolve(__dirname+'/../repositories/candy.repository.js'));
 
 // Google oAuth
 var google = new GoogleOAuth
@@ -218,9 +219,9 @@ function postTokenCallback(authObjects, credentials, callback) {
           storePokemonTeam(trainerObj, team);
           storeInventoryItems(trainerObj, items);
           storePokedex(trainerObj, pokedex);
+          storeCandy(trainerObj, candy);
           // storeInventoryUpgrades(trainerObj, upgrades);
           // storeEggIncubators(trainerObj, incubators);
-          // storeCandy(trainerObj, candy);
           console.log('[i] inventory count : ['+inventory.length+']');
         } else {
           console.log('[!] No inventory received')
@@ -390,18 +391,6 @@ function storePokemonTeam(trainerObj, team) {
 }
 
 /**
-* Fetches a trainer's pokemon team from the local database
-* @param String username
-* @param Function callback(error, pokemons)
-* @return callback(Error error, Pokemons pokemons)
-*/
-function getPokemonTeam(username, callback) {
-  pokemonRepo.findPokemonTeam(username, function(error, pokemons) {
-    return callback(error, pokemons);
-  })
-}
-
-/**
 * Stores items fetched from Niantic in the local database
 * @param Trainer {trainerObj}
 * @param Item[] items , array of Inventory.Item child objects
@@ -414,10 +403,6 @@ function storeInventoryItems(trainerObj, items) {
       inventoryRepo.createInventory(trainerObj.username, items, function(error, newInventory){});
     }
   })
-}
-
-function getInventory() {
-
 }
 
 /**
@@ -435,9 +420,19 @@ function storePokedex(trainerObj, pokedex) {
   });
 }
 
-
-function getPokedex(username, callback) {
-
+/**
+* Stores candies fetched from Niantic in the local database
+* @param Trainer {trainerObj}
+* @param Candy[] {candies} , array of Candies.Candy child objects
+*/
+function storeCandy(trainerObj, candies) {
+  candyRepo.findCandies(trainerObj.username, function(error, oldCandies) {
+    if (error) return;
+    else if (oldCandies)
+      candyRepo.updateCandies(trainerObj.username, candies, function(error, newCandies) {});
+    else
+      candyRepo.createCandies(trainerObj.username, candies, function(error, newCandies) {});
+  })
 }
 
 /**
@@ -645,9 +640,7 @@ function logout(username, callback) {
 * @return callback(Error error, Trainer[] trainers) , array of Trainer objects.
 */
 function getTrainer(username, callback) {
-  trainerRepo.getTrainer(username, function(error, trainers) {
-    return callback(error, trainers);
-  })
+  trainerRepo.getTrainer(username, callback);
 }
 
 /**
@@ -658,9 +651,7 @@ function getTrainer(username, callback) {
 * @return callback(Error error, Trainer[] trainers)
 */
 function getAvailableTrainers(username, callback) {
-  trainerRepo.getOnlineTrainers(username, function(error, trainers) {
-    callback(error, trainers);
-  });
+  trainerRepo.getOnlineTrainers(username, callback);
 }
 
 /**
@@ -670,26 +661,52 @@ function getAvailableTrainers(username, callback) {
 * @return callback(Error error, Badges badgs)
 */
 function getProfile(username, callback) {
-  badgeRepo.findByUsername(username, function(error, badges) {
-    return callback(error, badges);
-  });
+  badgeRepo.findByUsername(username, callback);
+}
+
+function getInventory(username, callback) {
+  inventoryRepo.findInventory(username, callback)
+}
+
+/**
+* Fetches a trainer's pokemon team from the local database
+* @param String username
+* @param Function callback(error, pokemons)
+* @return callback(Error error, Pokemons pokemons)
+*/
+function getPokemonTeam(username, callback) {
+  pokemonRepo.findPokemonTeam(username, callback);
+}
+
+function getPokedex(username, callback) {
+  pokedexRepo.findPokedex(username, callback);
 }
 
 function getStatistics(username, callback) {
-  
+  return callback(null, null);
 }
 
+/**
+* Fetches a trainer's candies team from the local database
+* @param String username
+* @param Function callback(error, candies)
+* @return callback(Error error, Candies candies)
+*/
+function getCandies(username, callback) {
+  candyRepo.findCandies(username, callback);
+}
 
 // Exports
 module.exports = {
   pokemonClub : pokemonClub,
   googleOAuth : googleOAuth,
   logout : logout,
-  getAvailableTrainers : getAvailableTrainers,
   getTrainer : getTrainer,
+  getAvailableTrainers : getAvailableTrainers,
   getProfile : getProfile,
   getInventory : getInventory,
   getPokemonTeam : getPokemonTeam,
   getPokedex : getPokedex,
-  getStatistics : getStatistics
+  getStatistics : getStatistics,
+  getCandies : getCandies
 }

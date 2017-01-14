@@ -113,15 +113,15 @@ function logout(req, res) {
       return res.send(trainer);
     } else {
       res.status('400');
-      res.send(new Error('No trainer found'))
+      res.send(new Error('No trainer found'));
     }
   });
 }
 
 /**
-* Get trainer profile from local database
+* Get trainer's badges from local database
 * @param String username
-* @return {Medals, Levels, something}
+* @return Badges {badges}
 */
 function getProfile(req, res) {
   var username = req.query.username || null;
@@ -137,39 +137,129 @@ function getProfile(req, res) {
       return res.send(badges);
     } else {
       res.status('400');
-      res.send(new Error('No badges found'))
+      res.send(new Error('No badges found'));
     }
   });
 }
 
 /**
-* GET : Get trainer inventory
-* @param : username (String) (in-game username)
-* @return {Inventory}
+* Get trainer's inventory from local database
+* @param String username
+* @return Inventory {inventory}
 */
 function getInventory(req, res) {
-  console.log('[!] Requesting inventory for user : '+req.query.username);
+  var username = req.query.username || null;
+  if (!username) {
+    res.status('400');
+    return res.send(new Error('No username supplied'));
+  }
+  trainerService.getInventory(username, function(error, inventory) {
+    if (error) {
+      res.status('400');
+      return res.send(error);
+    } else if (inventory) {
+      return res.send(inventory);
+    } else {
+      res.status('400');
+      return res.send(new Error('No inventory found'));
+    }
+  });
 };
 
-
 /**
-* Get pokemon by trainer username and pokemon ID ??
-* @return {Pokemon}
+* Get trainer's pokemon team from local database
+* @param String username
+* @return PokemonTeam {pokemon}
 */
 function getPokemon(req, res) {
- // TODO Implement
+  var username = req.query.username || null;
+  if (!username) {
+    res.status('400');
+    return res.send(new Error('No username supplied'));
+  }
+  trainerService.getPokemonTeam(username, function(error, pokemon) {
+    if (error) {
+      res.status('400');
+      return res.send(error);
+    } else if (pokemon) {
+      return res.send(pokemon);
+    } else {
+      res.status('400');
+      return res.send(new Error('No pokemon found'));
+    }
+  });
 }
 
-function getPokedex() {
-
+/**
+* Get trainer's pokedex from local database
+* @param String username
+* @return Pokedex {pokedex}
+*/
+function getPokedex(req, res) {
+  var username = req.query.username || null;
+  if (!username) {
+    res.status('400');
+    return res.send(new Error('No username supplied'));
+  }
+  trainerService.getPokedex(username, function(error, pokedex) {
+    if (error) {
+      res.status('400');
+      return res.send(error);
+    } else if (pokedex) {
+      return res.send(pokedex);
+    } else {
+      res.status('400');
+      return res.send(new Error('No pokedex found'));
+    }
+  });
 }
 
-function getStatistics() {
-
+/**
+* Get trainer's statistics from local database
+* @param String username
+* @return Statistics {statistics}
+*/
+function getStatistics(req, res) {
+  var username = req.query.username || null;
+  if (!username) {
+    res.status('400');
+    return res.send(new Error('No username supplied'));
+  }
+  trainerService.getStatistics(username, function(error, statistics) {
+    if (error) {
+      res.status('400');
+      return res.send(error);
+    } else if (statistics) {
+      return res.send(statistics);
+    } else {
+      res.status('400');
+      return res.send(new Error('No statistics found'));
+    }
+  });
 }
 
-function getCandies() {
-
+/**
+* Get trainer's candies from local database
+* @param String username
+* @return Candies {candies}
+*/
+function getCandies(req, res) {
+    var username = req.query.username || null;
+    if (!username) {
+      res.status('400');
+      return res.send(new Error('No username supplied'));
+    }
+    trainerService.getCandies(username, function(error, candies) {
+      if (error) {
+        res.status('400');
+        return res.send(error);
+      } else if (candies) {
+        return res.send(candies);
+      } else {
+        res.status('400');
+        return res.send(new Error('No candies found'));
+      }
+    });
 }
 
 module.exports = {
