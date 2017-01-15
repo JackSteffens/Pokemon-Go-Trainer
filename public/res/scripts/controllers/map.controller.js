@@ -15,7 +15,6 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     pokestop : true,
     gym : true
   }
-  $scope.directions = [];
   $scope.currentTrainer = TrainerService.getCurrentTrainer();
   $scope.trainers = TrainerService.getTrainers();
   $scope.pokemon = {};
@@ -28,18 +27,34 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
   };
   $scope.pokemonDetails = {};
   $scope.path = {};
+  $scope.polylineOptions = {
+    current : {
+      strokeColor : "green",
+      onClick : polyLineClick()
+    },
+    suggested : {
+      strokeColor : "grey",
+      onClick : polyLineClick()
+    }
+  }
+
   // Scope functions
   $scope.displayPokemonInfo = displayPokemonInfo;
   $scope.displayTrainerInfo = displayTrainerInfo;
   $scope.getDirections = getDirections;
   $scope.getNearbyData = getNearbyData;
-  $scope.getDirectionsFromPokemon = getDirectionsFromPokemon;
+  $scope.getDirectionsToPokemon = getDirectionsToPokemon;
+  $scope.polyLineClick = polyLineClick;
+  $scope.setDirectionsToPokemon = setDirectionsToPokemon;
+
+  function polyLineClick(event) {
+    console.log(event);
+  }
 
   // Functions
   function init() {
     getPokedex();
     getNearbyData();
-    // getDirections(52.360102, 4.786153, 52.350992, 4.77924);
     getMap();
 
     // Set websocket channels
@@ -58,7 +73,7 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     },2000);
   }
 
-  function getDirectionsFromPokemon(pokemon) {
+  function getDirectionsToPokemon(pokemon) {
     if ($scope.currentTrainer && pokemon) {
       getDirections(
         $scope.currentTrainer.location.latitude,
@@ -66,6 +81,25 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
         pokemon.lat,
         pokemon.lng
       );
+    }
+  }
+
+  function setDirectionsToPokemon(pokemon) {
+    if ($scope.currentTrainer && pokemon) {
+      setDirections(pokemon.lat, pokemon.lng);
+    }
+  }
+
+  function setDirections(destLat, destLng) {
+    if ($scope.currentTrainer) {
+      $http({
+        method: 'POST',
+        url: Api.url.destination+'?username='+$scope.currentTrainer.username+'&latitude='+destLat+'&longitude='+destLng
+      }).then(function successCallback(response) {
+        $scope.path = undefined;
+        console.log(response.data);
+        $scope.currentTrainer.destination = response.data;
+      });
     }
   }
 
@@ -91,14 +125,20 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
   }
 
   function displayPokemonInfo(event, poke) {
+    getDirectionsToPokemon(poke);
     $scope.pokemonDetails = poke;
     // console.log($scope.pokemonDetails);
     this.map.showInfoWindow('info-window-pokemon', this);
   }
 
   function displayTrainerInfo(event, trainer) {
+    selectCurrentTrainer(trainer)
     $scope.trainerDetails = trainer;
     this.map.showInfoWindow('info-window-trainer', this);
+  }
+
+  function selectCurrentTrainer(trainer) {
+    TrainerService.setTrainer(trainer.username);
   }
 
   function getDirections(originLat, originLng, destLat, destLng) {
@@ -116,8 +156,8 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
       for (var i = 0; i < steps.length; i++) {
         var waypoint = {
           location : new google.maps.LatLng({
-            lat:steps[i].start_location.lat,
-            lng:steps[i].start_location.lng
+            lat:steps[i].end_location.lat,
+            lng:steps[i].end_location.lng
           }),
           stopover : false
         }

@@ -12,6 +12,12 @@ body {
   width: 800px;
 }
 
+/* Hiding the bottom pointer on Map Markers */
+div.ng-map-info-window>div:first-of-type>div:nth-of-type(1),
+div.ng-map-info-window>div:first-of-type>div:nth-of-type(3) {
+  /*display:none!important;*/
+}
+
 @media screen and (max-width: 1000px) {
     .md-modal-container {
         max-width: 80%;

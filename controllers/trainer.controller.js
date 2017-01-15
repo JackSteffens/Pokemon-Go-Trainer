@@ -296,6 +296,39 @@ function updateLocation(req, res) {
   })
 }
 
+/**
+*
+* @param latitude, longitude, trvlMode, speed, enabled
+* @return Destination newDestination , Trainer.Destination child object
+*/
+function updateDestination(req, res) {
+  var username = req.query.username;
+  var pathOptions = {
+    latitude : req.query.latitude,
+    longitude : req.query.longitude,
+    trvlMode : req.query.trvlMode || "BICYCLING",
+    speed : req.query.speed || 5,
+    enabled : req.query.enabled || false
+  }
+
+  if (!username) {
+    res.status('400');
+    return res.send(('No username supplied'));
+  } else if (!pathOptions || !pathOptions.latitude || !pathOptions.longitude) {
+    res.status('400');
+    return res.send(('No location supplied'));
+  } else {
+    trainerService.updateDestination(username, pathOptions, function(error, newDestination) {
+      if (error) {
+        res.status('400');
+        return res.send(error);
+      } else {
+        return res.send(newDestination);
+      }
+    });
+  }
+}
+
 module.exports = {
   getTrainer : getTrainer,
   login : login,
@@ -307,5 +340,6 @@ module.exports = {
   getPokedex : getPokedex,
   getStatistics : getStatistics,
   getCandies : getCandies,
-  updateLocation : updateLocation
+  updateLocation : updateLocation,
+  updateDestination : updateDestination
 }

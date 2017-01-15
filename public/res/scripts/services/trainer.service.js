@@ -10,13 +10,11 @@ angular.module('pogobot').service('TrainerService',
     * @param String username
     */
     this.setTrainer = function(username) {
-      // For each trainers[], check if 'username' exists.
-      // 'currentPlayer' = trainers[index]
-      var trainer = $filter('filter')(this.trainers, {username:username}, true)[0];
-      if (trainer) {
-        this.currentTrainer = trainer;
-      } else {
-        console.error("Trainer ["+username+"] doesn't exist");
+      if (!this.currentTrainer || (username !== this.currentTrainer.username)) {
+        var trainer = $filter('filter')(this.onlineTrainers, {username:username}, true)[0];
+        if (trainer) {
+          this.currentTrainer = trainer;
+        }
       }
     }
 

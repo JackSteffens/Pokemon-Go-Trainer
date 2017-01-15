@@ -11,6 +11,7 @@ function() {
     pokemonTeam : this.baseUrl + "/trainer/pokemon",
     profile     : this.baseUrl + "/trainer/profile",
     availableTrainers: this.baseUrl + "/trainer/available",
+    destination : this.baseUrl + "/trainer/destination",
     pokedex     : this.baseUrl + "/pokedex",
     map         : this.baseUrl + "/map",
     path        : this.baseUrl + "/map/path",

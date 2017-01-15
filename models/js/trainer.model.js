@@ -14,8 +14,27 @@ var Avatar = new Schema({                  // Trainer's look
   backpack: {type:Number, required:true}   // Backpack style
 });
 
-var PokemonType = new Schema({
+var WaypointSchema = new Schema({         // Waypoints, points in the path
+  location: {                             // ^ coordinates
+    lat: {type:Number, required:true},    //   ^ latitude
+    lng: {type:Number, required:true}     //   ^ longitude
+  },
+  stopover : {type:Boolean, required:true}// ^ dragable point
+}, {_id:false});
 
+var DestinationSchema = new Schema({
+  origin : {                                // Start of the path
+    lat: {type:Number, required:true},      // ^ latitude
+    lng: {type:Number, required:true}       // ^ longitude
+  },
+  destination : {                           // End of the path
+    lat: {type:Number, required:true},      // ^ latitude
+    lng: {type:Number, required:true}       // ^ longitude
+  },
+  waypoints : {type:[WaypointSchema], required:true},
+  current_waypoint : {type:Number, required:true},  // Current index in Waypoints
+  enabled : {type:Boolean, required:true},  // Enable walking
+  speed : {type:Number, required:true}      // Speed in km/h
 });
 
 var StatisticsSchema = new Schema({
@@ -58,7 +77,7 @@ var TrainerSchema = new Schema({
     latitude: {type:Number, required:true},     // API requests require player location
     longitude: {type:Number, required:true},    // ^
     accuracy: {type:Number, required:true},     // ^
-    lastTimestamp: {type:Number, required:true} // Long {milliseconds} , last location update
+    last_timestamp: {type:Number, required:true} // Long {milliseconds} , last location update
   },
   username: {type:String,                     // In game (user)name
              required:true,
@@ -88,7 +107,8 @@ var TrainerSchema = new Schema({
   	last_km_awarded: {type:Number, required:true}
   },
   battle_lockout_end_ms: {type:Number, required:true},
-  statistics: {type:StatisticsSchema, required:false}
+  statistics: {type:StatisticsSchema, required:false},
+  destination: {type:DestinationSchema, required:false}
 });
 
 Trainer = mongoose.model('trainers', TrainerSchema);

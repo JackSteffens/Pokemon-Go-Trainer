@@ -90,7 +90,7 @@ function updateStatistics(username, statistics, callback) {
     {runValidators:true, new:true},
     function(error, newTrainer) {
       if (error) console.log(('[!] Error updating trainer stats \n'+error).red)
-      else console.log('[i] Updated existing trainer stats : '+newTrainer.username);
+      else if (newTrainer) console.log('[i] Updated existing trainer stats : '+newTrainer.username);
       return callback(error, newTrainer);
     }
   );
@@ -106,12 +106,32 @@ function updateStatistics(username, statistics, callback) {
 function updateLocation(username, location, callback) {
   Trainer.findOneAndUpdate(
     {'username':username},
-    {'location':location},
+    {'location':location, 'location.accuracy' : location.accuracy || 0, 'last_timestamp' : new Date().getTime()},
     {runValidators:true, new:true},
     function(error, newTrainer) {
       if (error) console.log(('[!] Error udating trainer location \n'+error).red)
-      else console.log('[i] Updated location for user : '+username)
+      else if (newTrainer) console.log('[i] Updated location for trainer : '+username)
       return callback(error, newTrainer);
+    }
+  )
+}
+
+/**
+* Update a trainer destination path object
+* @param String username , unique identifier
+* @param Destination {destination}
+* @param Function callback(error, newTrainer)
+* @return function(Error error, Trainer newTrainer) , callback function
+*/
+function updateDestination(username, destination, callback) {
+  Trainer.findOneAndUpdate(
+    {'username':username},
+    {'destination':destination},
+    {runValidators:true, new:true},
+    function(error, newTrainer) {
+      if (error) console.log(('[!] Error updating player destination \n'+error).red);
+      else if (newTrainer) console.log('[i] Updated destination for trainer : '+newTrainer.username);
+      callback(error, newTrainer);
     }
   )
 }
@@ -138,5 +158,6 @@ module.exports = {
   updateTrainer : updateTrainer,
   updateStatistics : updateStatistics,
   updateLocation : updateLocation,
+  updateDestination : updateDestination,
   createTrainer : createTrainer
 }

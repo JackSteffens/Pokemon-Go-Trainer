@@ -27,11 +27,11 @@
                     layout="row" layout-align="center center">
                 <img ng-src="/res/images/pokemons_icon/{{pokemonDetails.id}}.png"></img>
               </div>
-              <p>
+              <span>
                 Time left : {{pokemonDetails.disappear_time | countdownFilter}}
-              </p>
-              <md-button ng-if="currentTrainer" ng-click="getDirectionsFromPokemon(pokemonDetails)">
-                Get Directions
+              </span>
+              <md-button ng-if="currentTrainer" class="md-flat md-primary" ng-click="setDirectionsToPokemon(pokemonDetails)">
+                Go here
                 <md-tooltip>{{currentTrainer.username}}</md-tooltip>
               </md-button>
             </div>
@@ -44,10 +44,12 @@
             <h1 class="md-subhead">{{trainerDetails.username}}</h1>
             <div style="width:150px;">
               <div class="info-window-arena" layout="row" layout-align="center center">
-                stuff
+                [icon]
               </div>
               <p>
-                stuff
+                <span>Is online : {{trainerDetails.login.accessToken ? true : false}}</span><br>
+                <span>Is walking : {{!trainerDetails.destination ? false : trainerDetails.destination.enabled ? true : false}}</span><br>
+                <span>Is scanning : [todo]</span>
               </p>
             </div>
           </div>
@@ -63,10 +65,23 @@
         <directions ng-if="path && path.origin && path.destination && path.waypoints"
                     draggable="false"
                     travel-mode="BICYCLING"
-                    waypoints="{{path.waypoints}}"
-                    origin="{{path.origin}}"
-                    destination="{{path.destination}}"
-                    suppress-bicycling-layer="true">
+                    waypoints="{{path ? path.waypoints : []}}"
+                    origin="{{path ? path.origin : ''}}"
+                    destination="{{path ? path.destination : ''}}"
+                    suppress-bicycling-layer="true"
+                    polyline-options="{{polylineOptions.suggested}}"
+                    preserve-viewport="true">
+        </directions>
+
+        <directions ng-if="currentTrainer && currentTrainer.destination"
+                    draggable="false"
+                    travel-mode="BICYCLING"
+                    waypoints="{{currentTrainer.destination ? currentTrainer.destination.waypoints : []}}"
+                    origin="{{currentTrainer.destination ? currentTrainer.destination.origin : ''}}"
+                    destination="{{currentTrainer.destination ? currentTrainer.destination.destination : ''}}"
+                    suppress-bicycling-layer="true"
+                    polyline-options="{{polylineOptions.current}}"
+                    preserve-viewport="true">
         </directions>
       </ng-map>
 

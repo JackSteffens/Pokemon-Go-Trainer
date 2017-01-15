@@ -7,7 +7,10 @@ var protobuf = require('protobufjs');       // Decoding responses using .proto
 var GoogleOAuth = require('gpsoauthnode');  // Google authentication
 var Long = require('long')                  // Long for date timestamps
 var colors = require('colors');             // Console collors
-var websocket = require('../utils/websocket.js');
+var websocket = require('../utils/websocket.js'); // Websocket
+
+// Services
+var mapService = require(path.resolve(__dirname+'/../services/map.service.js'));
 
 // Repositories
 var trainerRepo = require(path.resolve(__dirname+'/../repositories/trainer.repository.js'));
@@ -21,7 +24,7 @@ var candyRepo = require(path.resolve(__dirname+'/../repositories/candy.repositor
 var google = new GoogleOAuth
 
 // Configuration
-request = request.defaults({jar: request.jar()}); // For some reason this shit is needed to log in.
+request = request.defaults({jar: request.jar()});
 
 /**
 * Authenticate on the Niantic servers using the identification tokens
@@ -118,7 +121,8 @@ function postTokenCallback(authObjects, credentials, callback) {
     location: {
       latitude: parseFloat(credentials.latitude),
       longitude: parseFloat(credentials.longitude),
-      accuracy: 0
+      accuracy: parseFloat(credentials.accuracy) || 0,
+      last_timestamp: new Date().getTime()
     }
   }
   getApiEndpoint(trainerObj, function(error, trainerObj) {
@@ -254,6 +258,17 @@ function parseTrainerData(trainerObj, statistics) {
       statistics.daily_bonus.next_defender_bonus_collect_timestamp_ms.high,
       statistics.daily_bonus.next_defender_bonus_collect_timestamp_ms.unsigned)
   };
+  trainerObj.equipped_badge = {
+    badge_type: statistics.equipped_badge.badge_type,
+    level: statistics.equipped_badge.level,
+    next_equip_change_allowed_timestamp_ms: new Long(statistics.equipped_badge.next_equip_change_allowed_timestamp_ms)
+  };
+  trainerObj.buddy_pokemon = {
+  	id: statistics.buddy_pokemon.id,
+  	start_km_walked: statistics.buddy_pokemon.start_km_walked,
+  	last_km_awarded: statistics.buddy_pokemon.last_km_awarded
+  };
+  trainerObj.battle_lockout_end_ms = new Long(statistics.battle_lockout_end_ms);
 
   return trainerObj;
 }
@@ -704,7 +719,10 @@ function getCandies(username, callback) {
 
 /**
 * Update a trainer's location and broadcast it over the private websocket channel
-*
+* @param String username , unique identifier
+* @param Location {location} , Location.latitude, Location.longitude, Optional Location.accuracy
+* @param Function callback(error, newTrainer)
+* @return callback(Error error, Trainer newTrainer) , callback function
 */
 function updateLocation(username, location, callback) {
   if (location && location.latitude && location.longitude) {
@@ -713,11 +731,73 @@ function updateLocation(username, location, callback) {
       else if (newTrainer) {
         // Broadcast to websocket channel 'trainer/username'
         websocket.broadcast('location/'+newTrainer.username, newTrainer);
-        console.log(newTrainer);
         return callback(error, newTrainer);
       }
-    })
+    });
   }
+}
+
+/**
+* Update a trainer's destination. This is used for basic path finding using
+* Google Maps' object specifications for easy integration.
+* @param String username , unique identifier
+* @param Object {pathOptions} , float Obj.latitude destination,
+* float Obj.longitude destination, int Obj.speed km/h, boolean Obj.enabled
+* @param Function callback(error, newDestination)
+* @return callback(Error error, Destination newDestination) ,  callback function
+*/
+function updateDestination(username, pathOptions, callback) {
+  trainerRepo.getTrainer(username, function(error, oldTrainer) {
+    if (error) return callback(error);
+    else if (oldTrainer) {
+      var oLat = oldTrainer.location.latitude,
+          oLng = oldTrainer.location.longitude,
+          dLat = pathOptions.latitude,
+          dLng = pathOptions.longitude,
+          trvlMode = pathOptions.trvlMode,
+          speed = pathOptions.speed,
+          enabled = pathOptions.enabled;
+      mapService.fetchPath(oLat, oLng, dLat, dLng, trvlMode, function(error, body) {
+        if (error) return callback(error);
+        else if (body) {
+          var path = JSON.parse(body);
+          var waypoints = [];
+          var steps = path.routes[0].legs[0].steps;
+          for (var i = 0; i < steps.length; i++) {
+            var waypoint = {
+              location : {
+                lat : steps[i].end_location.lat,
+                lng : steps[i].end_location.lng
+              },
+              stopover:false
+            }
+            waypoints.push(waypoint);
+          }
+          var destination = {
+            origin : {
+              lat: oLat,
+              lng: oLng
+            },
+            destination : {
+              lat: parseFloat(path.routes[0].legs[0].end_location.lat),
+              lng: parseFloat(path.routes[0].legs[0].end_location.lng)
+            },
+            waypoints : waypoints,
+            speed : speed,
+            enabled : enabled
+          }
+          trainerRepo.updateDestination(username, destination, function(error, newTrainer) {
+            if (error) return callback(error);
+            else if (newTrainer && newTrainer.destination)
+            websocket.broadcast('destination/'+newTrainer.username, newTrainer.destination);
+            return callback(error, newTrainer.destination);
+          });
+        } else {
+          return callback('Could not fetch path from Google Maps')
+        }
+      })
+    } else return callback('No trainer found');
+  });
 }
 
 // Exports
@@ -733,5 +813,6 @@ module.exports = {
   getPokedex : getPokedex,
   getStatistics : getStatistics,
   getCandies : getCandies,
-  updateLocation : updateLocation
+  updateLocation : updateLocation,
+  updateDestination : updateDestination
 }

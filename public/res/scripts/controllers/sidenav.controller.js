@@ -1,5 +1,5 @@
 angular.module('pogobot').controller('SidenavCtrl',
-function($scope, $mdSidenav, TrainerService) {
+function($scope, $mdSidenav, $filter, TrainerService) {
   $scope.closeSidenav = function() {
     $mdSidenav('left').close();
   };
@@ -8,10 +8,15 @@ function($scope, $mdSidenav, TrainerService) {
 
   function init() {
     selectTrainer($scope.selectedCharacterIndex);
+
+    // Watcher on online trainers
     $scope.$watch(function() {
       return TrainerService.getOnlineTrainers();
     }, function(trainers) {
       $scope.trainers = trainers;
+      if (trainers.length == 1) {
+        selectTrainer(0);
+      }
     }, true);
 
     // Watcher on tabs index. Switching tabs selects a trainer.
@@ -21,15 +26,18 @@ function($scope, $mdSidenav, TrainerService) {
       }
     }, true);
 
-    // Watcher on getOnlineTrainers for auto selecting the first login.
     $scope.$watch(function() {
-      return TrainerService.getOnlineTrainers().length;
+      var trainer = TrainerService.getCurrentTrainer();
+      if (trainer) return trainer.username; else return null;
     }, function(newVal, oldVal) {
-      if (!oldVal && newVal > 0) {
-        console.log('selectTrainer() because first login');
-        selectTrainer($scope.selectedCharacterIndex);
+      if (newVal !== oldVal) {
+        for (var i = 0; i < $scope.trainers.length; i++) {
+          if  (newVal == $scope.trainers[i].username) {
+            $scope.selectedCharacterIndex = i;
+          }
+        }
       }
-    }, true);
+    },true);
   }
 
   function selectTrainer(index) {
@@ -40,11 +48,8 @@ function($scope, $mdSidenav, TrainerService) {
     }
   }
 
-
-
-
   $scope.routes = [
-    {label:"map",        route:"map",        icon:"home",      auth:false},
+    {label:"map",        route:"map",        icon:"map",      auth:false},
     {label:"accounts",   route:"accounts",   icon:"people",    auth:false},
     {label:"settings",   route:"settings",   icon:"settings",  auth:false},
     {label:"Character Overview", route:"overview", icon:"folder_shared", auth:true}

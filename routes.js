@@ -26,6 +26,7 @@ exports.setRequestUrl = function(app) {
   app.get('/api/trainer/statistics', trainer.getStatistics);
   app.get('/api/trainer/candies', trainer.getCandies);
   app.post('/api/trainer/location', trainer.updateLocation);
+  app.post('/api/trainer/destination', trainer.updateDestination);
 
   // Web application index
   app.get('/', function(req, res) {

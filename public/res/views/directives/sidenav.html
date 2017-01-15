@@ -53,18 +53,6 @@
 
   <md-content>
     <md-menu-content style="padding-top:0;">
-      <!-- Character specific pages -->
-      <!-- Only show when 1 or more trainers are registered -->
-      <div>
-        <md-menu-item>
-          <md-button ui-sref="character" ng-click="closeSidenav()" ui-sref-active="selected">
-            <md-icon class="material-icons">folder_shared</md-icon>
-            <span>Character Overview</span>
-          </md-button>
-        </md-menu-item>
-        <md-menu-divider></md-menu-divider>
-      </div>
-
       <!-- General pages -->
       <div ng-repeat="route in routes">
         <md-menu-item>
