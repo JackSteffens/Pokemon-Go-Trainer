@@ -34,6 +34,7 @@
     "oclazyload": "^1.0.9",
     "protobufjs": "^5.0.1",
     "request": "^2.73.0",
+    "s2-geometry": "^1.2.9",
     "socket.io": "^1.7.2",
     "websocket": "^1.0.23"
   }

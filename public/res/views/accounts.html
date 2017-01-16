@@ -15,10 +15,13 @@
       <md-grid-tile class="trainer-profile-card"
                     ng-repeat="trainer in trainers"
                     md-whiteframe="2">
-        <md-content md-theme="mysticBackground" class="grid-tile-container md-hue-2">
+        <md-content md-theme="mysticBackground"
+                    class="grid-tile-container md-hue-2 clickable"
+                    md-ink-ripple
+                    ui-sref="character({username: trainer.username})">
           <div class="trainer-profile-card-image" layout="column" layout-align="start end">
             <!-- Login button -->
-            <md-button ng-if="!trainer.login.accessToken" md-theme="mystic" class="md-icon-button md-raised" ng-click="loginPopup($event, trainer)" style="top:1em; float:right; right:-.5em;">
+            <md-button ng-if="!trainer.login.accessToken" md-theme="mystic" class="md-icon-button md-raised" ng-click="loginPopup($event, trainer); $event.stopPropagation()" style="top:1em; float:right; right:-.5em;">
               <md-icon class="material-icons">
                 play_arrow
               </md-icon>
@@ -28,7 +31,7 @@
             </md-button>
 
             <!-- Logout button -->
-            <md-button ng-if="trainer.login.accessToken" md-theme="mystic" class="md-icon-button md-raised" ng-click="logoutPopup($event, trainer)" style="top:1em; float:right; right:-.5em;">
+            <md-button ng-if="trainer.login.accessToken" md-theme="mystic" class="md-icon-button md-raised" ng-click="logoutPopup($event, trainer); $event.stopPropagation()" style="top:1em; float:right; right:-.5em;">
               <md-icon class="material-icons">
                 exit_to_app
               </md-icon>
@@ -38,6 +41,7 @@
             </md-button>
           </div>
         </md-content>
+
 
         <md-grid-tile-footer>
           <!-- Exp -->
@@ -52,11 +56,10 @@
         </md-grid-tile-footer>
       </md-grid-tile>
 
-      <md-grid-tile class="trainer-profile-card"
+      <md-grid-tile class="trainer-profile-card clickable"
                     md-whiteframe="2"
                     ng-click="loginPopup($event, null)"
-                    md-ink-ripple
-                    style="cursor:pointer">
+                    md-ink-ripple>
         <md-content md-theme="mysticBackground"
                     class="grid-tile-container md-hue-2"
                     layout="column"

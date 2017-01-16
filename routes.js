@@ -11,6 +11,7 @@ exports.setRequestUrl = function(app) {
 
   // Map
   app.get('/api/map/scanner', map.getScanData);
+  app.get('/api/map/convert', map.convertS2ToCoord);
   app.get('/api/map/path', map.getPath);
   app.get('/api/map/scanner/ext', map.getScanDataExternal);
 

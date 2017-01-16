@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 
 // Child pokemon
 var Pokemon = new Schema({
-	id: {type:String, required:true},          // Float unique ID
+	id: {type:String, required:true},          // Long unique ID
 	pokemon_id: {type:Number, required:true},  // Pokedex ID
 	cp: {type:Number, required:true},          // CP level
 	stamina:  {type:Number, required:true},    // Stamina (battles)
@@ -23,7 +23,10 @@ var Pokemon = new Schema({
 	individual_stamina: {type:Number, required:true},  // IV stamina
 	cp_multiplier: {type:Number, required:true}, // Level up multiplier
 	pokeball: {type:Number, required:true},    // Pokeball type Enum
-	captured_cell_id: {type:Number, required:true},  // Long locaton
+	location: {
+		lat: {type:Number, required:true},
+		lng: {type:Number, required:true}
+	},
 	battles_attacked: {type:Number, required:true},  // Gyms attacked
 	battles_defended: {type:Number, required:true},  // Gyms defended
 	egg_incubator_id: {type:String, required:false},  // If egg, inside which incubator ID
@@ -34,7 +37,7 @@ var Pokemon = new Schema({
 	nickname: {type:String, required:false},   // Nickname
 	from_fort: {type:Number, required:true},    // Might mean that it's caught at a pokestop (fort) with lures
 	buddy_candy_awarded: {type:Number, required:false}, // Candy awarded as buddy
-	buddy_total_km_walked: {type:Number, required:false} // KM walked as buddy {Float}
+	buddy_total_km_walked: {type:Number, required:false} // KM walked as buddy {Long}
 });
 
 var PokemonTeam = new Schema({

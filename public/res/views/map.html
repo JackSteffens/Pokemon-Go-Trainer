@@ -30,10 +30,13 @@
               <span>
                 Time left : {{pokemonDetails.disappear_time | countdownFilter}}
               </span>
-              <md-button ng-if="currentTrainer" class="md-flat md-primary" ng-click="setDirectionsToPokemon(pokemonDetails)">
-                Go here
-                <md-tooltip>{{currentTrainer.username}}</md-tooltip>
-              </md-button>
+              <div layout="row">
+                <md-button ng-if="currentTrainer" ng-disabled="pathLoading" class="md-flat md-primary" ng-click="setDirectionsToPokemon(pokemonDetails)">
+                  Navigate
+                  <md-tooltip>{{currentTrainer.username}}</md-tooltip>
+                </md-button>
+                <md-progress-circular ng-if="pathLoading" md-mode="indeterminate" md-diameter="48"></md-progress-circular>
+              </div>
             </div>
           </div>
         </info-window>

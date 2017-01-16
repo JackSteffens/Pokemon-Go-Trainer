@@ -1,44 +1,180 @@
+<md-content md-theme="mysticBackground" class="md-header-tall md-primary" layout="row" layout-align="center center">
+  <div class="md-toolbar-tools md-warn">
+    <span class="md-display-3 text-white">{{::username}}</span>
+  </div>
+</md-content>
+
 <md-content>
-  <md-content md-theme="mysticBackground" class="md-header-tall md-primary" layout="row" layout-align="center center">
-    <div class="md-toolbar-tools md-warn">
-      <span class="md-display-3 text-white">Character Overview</span>
-    </div>
-  </md-content>
+  <md-tabs md-dynamic-height md-selected="tabIndex">
+    <!-- inventory -->
+    <md-tab label="Inventory" layout-padding>
 
-  <md-content layout-padding>
-    Hello {{user}}<br>
+      <md-content>
+        <table>
+          <thead>
+            <th>Stat</th>
+            <th>Count</th>
+          </thead>
+          <tbody>
+            <tr layout-padding ng-repeat="item in inventory.items | orderBy : '-count'">
+              <td>{{::item.item_id | ItemFilter : 'name'}}</td>
+              <td>{{::item.count}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </md-content>
+    </md-tab>
 
-    <span class="md-headline">Pokedex</span>
-    <md-grid-list
-        md-cols-xs="2" md-cols-sm="3" md-cols-md="4" md-cols-gt-md="6"
-        md-row-height-gt-md="1:1" md-row-height="2:2"
-        md-gutter="12px" md-gutter-gt-sm="8px">
-      <md-grid-tile ng-repeat="pokemon in pokedex.pokemon"
-                    md-whiteframe="2"
-                    class="account-profile-card">
+    <!-- pokemon -->
+    <md-tab label="Pokemon">
+      <md-toolbar>
+        <div class="md-toolbar-tools">
+            <md-menu style="margin:0;">
+              <md-button ng-click="$mdOpenMenu($event)">
+                {{query.label}}
+              </md-button>
+               <md-menu-content>
+                 <md-menu-item ng-repeat="(key, label) in pokemonStats">
+                   <md-button ng-click="setOrder(key, label)" aria-label="Set order">
+                     {{label}}
+                   </md-button>
+                 </md-menu-item>
+               </md-menu-content>
+            </md-menu>
 
-        <md-content md-theme="mysticBackground" class="md-primary md-hue-2 grid-tile-container">
-          <div style="background-image:url('/res/images/pokemons/{{pokemon.num}}.png');
-                      background-position: center;
-                      background-repeat: no-repeat;
-                      background-size: fit;
-                      height:100%;
-                      width:100%;">
-            <!-- <md-button class="md-icon-button md-raised md-primary">
-              <md-icon class="material-icons">close</md-icon>
-            </md-button> -->
-          </div>
-        </md-content>
+            <!-- Ascending / Descending -->
+            <md-button ng-click="query.ordertoggle = !query.ordertoggle">{{!query.ordertoggle ? 'ascending' : 'descending'}}</md-button>
 
-        <md-grid-tile-footer>
-          <div layout="row" style="padding-top:.75em; padding-right: 16px;">
-            <h3>{{pokemon.name}}</h3>
-            <span flex="100"></span>
-            <h3>{{pokemon.num}}</h3>
-          </div>
-        </md-grid-tile-footer>
-      </md-grid-tile>
-    </md-grid-list>
-  </md-content>
+            <!-- Search pokemon -->
+            <md-autocomplete
+              style="width:400px"
+              flex="nogrow"
+              md-escape-options="blur"
+              md-input-name="pokemonAutocomplete"
+              md-no-cache="true"
+              md-selected-item="query.search.selected"
+              md-search-text="query.search.text"
+              md-search-text-change="null"
+              md-selected-item-change="query.name = query.search.selected.name || ''"
+              md-items="pokemon in querySearch(query.search.text)"
+              md-item-text="pokemon.name"
+              placeholder="Search pokemon"
+              md-select-on-match="true"
+              md-delay="200"
+              md-match-case-insensitive="true">
+                <md-item-template>
+                  <span md-highlight-text="query.search.selected">{{pokemon.name}}</span>
+                </md-item-template>
+                <md-not-found>
+                  No pokemon matching "{{query.search.text}}" was found.
+                </md-not-found>
+        </md-autocomplete>
 
+        </div>
+      </md-toolbar>
+
+      <md-content layout-padding ng-if="tabPokemon">
+        <md-grid-list
+          md-cols-xs="2" md-cols-sm="3" md-cols-md="4" md-cols-gt-md="6"
+          md-row-height-gt-md="0.75:1" md-row-height="0.75:1"
+          md-gutter="12px" md-gutter-gt-sm="8px">
+          <md-grid-tile ng-repeat="pokemon in pokemonTeam | filter : {name:query.name} | orderBy : query.order : query.ordertoggle"
+                        class="trainer-profile-card pokemon-profile-card clickable tile-smooth" md-ink-ripple ng-click="openPokemonDialog($event, pokemon)">
+
+            <md-content class="md-primary md-hue-2 grid-tile-container profile-card-content">
+              <md-icon class="md-raised pokemon-profile-card-favorite">{{::pokemon.favorite ? 'star' : 'star_border'}}</md-icon>
+              <div style="background-image:url('/res/images/pokemons/{{::pokemon.num}}.png');
+                          background-position: center;
+                          background-repeat: no-repeat;
+                          background-size: fit;
+                          height:100%;
+                          width:100%;">
+              <h2 class="pokemon-profile-card-nickname">{{::pokemon.nickname ? pokemon.nickname : pokemon.name}}</h2>
+              </div>
+            </md-content>
+
+            <md-grid-tile-footer class="pokemon-profile-card-footer">
+            <md-progress-linear md-mode="determinate"
+            ng-class="{{[(health = 100*pokemon.stamina/pokemon.stamina_max) < 25 ? 'progress-red' : health < 50 ? 'progress-yellow' : 'progress-green']}}"
+            value="{{::health}}"></md-progress-linear>
+            <md-tooltip md-direction="top">
+              {{::pokemon.stamina}} / {{::pokemon.stamina_max}} HP
+            </md-tooltip>
+
+            <div layout="row" style="padding-top:.75em; padding-right: 16px;">
+              <h3 class="md-subhead">{{::pokemon.name}}</h3>
+              <span flex="auto"></span>
+              <h3 class="md-subhead">CP {{::pokemon.cp}}</h3>
+            </div>
+
+          </md-grid-tile-footer>
+        </md-grid-tile>
+      </md-grid-list>
+      </md-content>
+    </md-tab>
+
+    <!-- pokedex -->
+    <md-tab label="Pokedex" layout-padding>
+      <md-toolbar>
+        <div class="md-toolbar-tools">
+        </div>
+      </md-toolbar>
+
+
+
+      <md-content>
+        <table>
+          <thead>
+            <th>Pokemon</th>
+            <th>Encountered</th>
+            <th>Caught</th>
+          </thead>
+          <tbody>
+            <tr layout-padding ng-repeat="pokemon in pokedex.pokedex | orderBy : '-times_encountered'">
+              <td>{{::pokemon.pokemon_id | PokemonFilter : 'name'}}</td>
+              <td>{{::pokemon.times_encountered}}</td>
+              <td>{{::pokemon.times_captured}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </md-content>
+    </md-tab>
+
+    <!-- statistics -->
+    <md-tab label="statistics">
+      <md-toolbar>
+        <div class="md-toolbar-tools">
+        </div>
+      </md-toolbar>
+
+
+
+      <md-content>
+        <table>
+          <thead>
+            <th>Medal</th>
+            <th>Level</th>
+          </thead>
+          <tbody>
+            <tr layout-padding ng-repeat="(stat, val) in trainer.statistics">
+              <td>{{::stat}}</td>
+              <td>{{::val}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </md-content>
+    </md-tab>
+
+    <!-- badges -->
+    <md-tab label="Badges">
+      <md-toolbar>
+        <div class="md-toolbar-tools">
+        </div>
+      </md-toolbar>
+
+
+
+    </md-tab>
+  </md-tabs>
+  <md-progress-linear md-mode="indeterminate" ng-if='isLoading'></md-progress-linear>
 </md-content>

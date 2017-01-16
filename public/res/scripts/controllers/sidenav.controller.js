@@ -49,10 +49,10 @@ function($scope, $mdSidenav, $filter, TrainerService) {
   }
 
   $scope.routes = [
-    {label:"map",        route:"map",        icon:"map",      auth:false},
-    {label:"accounts",   route:"accounts",   icon:"people",    auth:false},
-    {label:"settings",   route:"settings",   icon:"settings",  auth:false},
-    {label:"Character Overview", route:"overview", icon:"folder_shared", auth:true}
+    {label:"map",        route:"map",        icon:"map"     },
+    {label:"accounts",   route:"accounts",   icon:"people"  },
+    {label:"history",    route:"history",    icon:"timeline"},
+    {label:"settings",   route:"settings",   icon:"settings"}
   ];
 
   init();

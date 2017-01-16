@@ -100,14 +100,15 @@ module.config(function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
       }
     })
     .state('character', {
-      url: '/character/:user',
+      url: '/character?username',
       templateUrl: './res/views/character.html',
       controller: 'CharacterCtrl',
       resolve: {
         loadMyFiles: function($ocLazyLoad) {
           return $ocLazyLoad.load({
             files: [
-              './res/scripts/controllers/character.controller.js'
+              './res/scripts/controllers/character.controller.js',
+              './res/scripts/controllers/pokemon.dialog.controller.js'
             ]
           })
         }

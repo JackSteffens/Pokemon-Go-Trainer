@@ -3,6 +3,7 @@ var config = require('../config.js');
 var mapService = require(__dirname+'/../services/map.service.js');
 var request = require('request');
 var path = require('path');
+var S2 = require('s2-geometry').S2;
 
 
 function getScanData(req, res) {
@@ -44,9 +45,16 @@ function getPath(req, res) {
   });
 }
 
+function convertS2ToCoord(req, res) {
+  if (req.query.s2)
+    return res.send(S2.idToLatLng(req.query.s2));
+  else return res.send();
+}
+
 // Exports
 module.exports = {
   getScanData : getScanData,
   getScanDataExternal : getScanDataExternal,
-  getPath : getPath
+  getPath : getPath,
+  convertS2ToCoord, convertS2ToCoord
 }

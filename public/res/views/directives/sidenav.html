@@ -11,11 +11,14 @@
   <md-tab label="{{trainer.username}}" ng-repeat="trainer in trainers">
     <md-content class="sidenav-user">
       <md-grid-list md-cols="1" md-row-height="1:1">
-        <md-grid-tile class="trainer-profile-card-nav">
+        <md-grid-tile class="trainer-profile-card-nav clickable"
+                      md-ink-ripple
+                      ng-click="closeSidenav()"
+                      ui-sref="character({username: trainer.username})">
           <!-- Image -->
           <md-content md-theme="mysticBackground" class="grid-tile-container md-hue-2">
             <div class="trainer-profile-card-image" layout="column" layout-align="start end">
-              <md-button md-theme="mystic" class="md-icon-button md-raised" style="top:1em; float:right; right:-1.5em;">
+              <md-button md-theme="mystic" class="md-icon-button md-raised" ng-click="$event.stopPropagation()" style="top:1em; float:right; right:-1.5em;">
                 <md-icon class="material-icons">
                   exit_to_app
                 </md-icon>

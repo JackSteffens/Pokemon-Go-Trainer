@@ -8,6 +8,7 @@ var GoogleOAuth = require('gpsoauthnode');  // Google authentication
 var Long = require('long')                  // Long for date timestamps
 var colors = require('colors');             // Console collors
 var websocket = require('../utils/websocket.js'); // Websocket
+var S2 = require('s2-geometry').S2;         // S2-Cell converter
 
 // Services
 var mapService = require(path.resolve(__dirname+'/../services/map.service.js'));
@@ -318,6 +319,12 @@ function storeTrainerData(trainerObj, callback) {
 */
 function parsePokemonTeam(team) {
   for(var i = 0; i < team.length; i++) {
+    var S2Cell = new Long(
+      team[i].captured_cell_id.low,
+      team[i].captured_cell_id.high,
+      team[i].captured_cell_id.unsigned
+    );
+    var S2LatLng = S2.idToLatLng(S2Cell.toString());
     var pokemon = {
       id : new Long(
         team[i].id.low,
@@ -342,11 +349,10 @@ function parsePokemonTeam(team) {
     	individual_stamina: team[i].individual_stamina,
     	cp_multiplier: team[i].cp_multiplier,
     	pokeball: team[i].pokeball,
-    	captured_cell_id: new Long(
-        team[i].captured_cell_id.low,
-        team[i].captured_cell_id.high,
-        team[i].captured_cell_id.unsigned
-      ),
+      location : {
+        lat : S2LatLng.lat,
+        lng : S2LatLng.lng
+      },
     	battles_attacked: team[i].battles_attacked,
     	battles_defended: team[i].battles_defended,
     	egg_incubator_id: team[i].egg_incubator_id,
@@ -704,7 +710,7 @@ function getPokedex(username, callback) {
 }
 
 function getStatistics(username, callback) {
-  return callback(null, null);
+  return callback(null);
 }
 
 /**

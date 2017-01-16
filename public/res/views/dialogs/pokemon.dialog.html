@@ -1,0 +1,15 @@
+<md-dialog class="md-dialog-container-custom">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      {{::pokemon.name}}
+    </div>
+  </md-toolbar>
+
+  <md-dialog-content>
+    <md-list>
+      <md-list-item ng-repeat="(key, val) in pokemon">
+        <span>{{::key}} : {{::val}}</span>
+      </md-list-item>
+    </md-list>
+  </md-dialog-content>
+</md-dialog>

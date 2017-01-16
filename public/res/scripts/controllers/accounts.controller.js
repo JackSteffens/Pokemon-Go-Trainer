@@ -17,7 +17,7 @@ function($scope, $rootScope, $http, $mdDialog, Api, TrainerService, Authenticate
     }, true);
   }
 
-  function loginPopup(event, account) {
+  function loginPopup(event, trainer) {
     $mdDialog.show({
       controller: 'loginCtrl',
       templateUrl: './res/views/dialogs/login.dialog.html',
@@ -28,7 +28,7 @@ function($scope, $rootScope, $http, $mdDialog, Api, TrainerService, Authenticate
       preserveScope: false,
       resolve: {
         trainerObj: function () {
-            return account;
+            return trainer;
         }
       }
     }).then(function successCallback() {

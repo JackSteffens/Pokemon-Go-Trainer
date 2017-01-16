@@ -27,6 +27,7 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
   };
   $scope.pokemonDetails = {};
   $scope.path = {};
+  $scope.pathLoading = false;
   $scope.polylineOptions = {
     current : {
       strokeColor : "green",
@@ -91,6 +92,8 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
   }
 
   function setDirections(destLat, destLng) {
+    $scope.currentTrainer.destination = undefined;
+    $scope.pathLoading = true;
     if ($scope.currentTrainer) {
       $http({
         method: 'POST',
@@ -98,7 +101,12 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
       }).then(function successCallback(response) {
         $scope.path = undefined;
         console.log(response.data);
-        $scope.currentTrainer.destination = response.data;
+        $timeout(function() {
+          $scope.currentTrainer.destination = response.data;
+          $scope.pathLoading = false;
+        },750);
+      }, function errorCallback() {
+        $scope.pathLoading = false;
       });
     }
   }
