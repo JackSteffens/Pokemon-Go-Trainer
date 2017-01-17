@@ -61,6 +61,7 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     // Set websocket channels
     for (var i = 0; i < $scope.trainers.length; i++) {
       Socket.subscribe('location/'+$scope.trainers[i].username, function(trainerObj) {
+        console.log('Received location update from '+trainerObj.username);
         var trainer = $filter('filter')($scope.trainers, {username:trainerObj.username}, true)[0];
         var index = $scope.trainers.indexOf(trainer);
         $scope.trainers[index].location = trainerObj.location;
@@ -97,7 +98,7 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     if ($scope.currentTrainer) {
       $http({
         method: 'POST',
-        url: Api.url.destination+'?username='+$scope.currentTrainer.username+'&latitude='+destLat+'&longitude='+destLng
+        url: Api.url.destination+'?username='+$scope.currentTrainer.username+'&latitude='+destLat+'&longitude='+destLng+'&speed=25'
       }).then(function successCallback(response) {
         $scope.path = undefined;
         console.log(response.data);

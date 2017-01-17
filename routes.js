@@ -14,6 +14,8 @@ exports.setRequestUrl = function(app) {
   app.get('/api/map/convert', map.convertS2ToCoord);
   app.get('/api/map/path', map.getPath);
   app.get('/api/map/scanner/ext', map.getScanDataExternal);
+  app.get('/api/map/distance', map.getDistance);
+  app.post('/api/map/walk', map.traversePath);
 
   // Trainer
   app.get('/api/trainer', trainer.getTrainer);

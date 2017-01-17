@@ -41,7 +41,7 @@ function($scope, $mdSidenav, $filter, TrainerService) {
   }
 
   function selectTrainer(index) {
-    if (index || index === 0) {
+    if (index || index === 0 && TrainerService.getOnlineTrainers().length > 0) {
       var newTrainer = TrainerService.getOnlineTrainers()[index];
       if (newTrainer)
         TrainerService.setTrainer(newTrainer.username);

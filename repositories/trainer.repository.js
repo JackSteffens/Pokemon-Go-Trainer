@@ -106,7 +106,12 @@ function updateStatistics(username, statistics, callback) {
 function updateLocation(username, location, callback) {
   Trainer.findOneAndUpdate(
     {'username':username},
-    {'location':location, 'location.accuracy' : location.accuracy || 0, 'last_timestamp' : new Date().getTime()},
+    {'location':{
+        'latitude':location.latitude,
+        'longitude':location.longitude,
+        'accuracy':location.accuracy || 0,
+        'last_timestamp': new Date().getTime()
+    }},
     {runValidators:true, new:true},
     function(error, newTrainer) {
       if (error) console.log(('[!] Error udating trainer location \n'+error).red)

@@ -8,6 +8,9 @@ var Long = require('long')                  // Long for date timestamps
 var colors = require('colors');             // Console collors
 var websocket = require('../utils/websocket.js'); // Websocket
 
+// Services
+var trainerService = require(path.resolve(__dirname+'/../services/trainer.service.js'));
+
 // Configuration
 request = request.defaults({jar: request.jar()});
 
@@ -37,5 +40,5 @@ function fetchPath(oLat, oLng, dLat, dLng, trvlMode, callback) {
 }
 
 module.exports = {
-  fetchPath : fetchPath
+  fetchPath : fetchPath,
 }

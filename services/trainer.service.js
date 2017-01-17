@@ -788,6 +788,7 @@ function updateDestination(username, pathOptions, callback) {
               lat: parseFloat(path.routes[0].legs[0].end_location.lat),
               lng: parseFloat(path.routes[0].legs[0].end_location.lng)
             },
+            current_waypoint : pathOptions.current_waypoint || 0,
             waypoints : waypoints,
             speed : speed,
             enabled : enabled
@@ -806,6 +807,22 @@ function updateDestination(username, pathOptions, callback) {
   });
 }
 
+/**
+* Directly update the trainer's destination object
+* @param String username , unique identifier
+* @param Destination {destination}
+* @param Function callback(error, newTrainer)
+* @return callback(Error error, Trainer newTrainer) , callback function()
+*/
+function updateDestinationObject(username, destination, callback) {
+  trainerRepo.updateDestination(username, destination, function(error, newTrainer) {
+    if (error) return callback(error);
+    else if (newTrainer && newTrainer.destination)
+    websocket.broadcast('destination/'+newTrainer.username, newTrainer.destination);
+    return callback(error, newTrainer.destination);
+  });
+}
+
 // Exports
 module.exports = {
   pokemonClub : pokemonClub,
@@ -820,5 +837,6 @@ module.exports = {
   getStatistics : getStatistics,
   getCandies : getCandies,
   updateLocation : updateLocation,
-  updateDestination : updateDestination
+  updateDestination : updateDestination,
+  updateDestinationObject : updateDestinationObject
 }
