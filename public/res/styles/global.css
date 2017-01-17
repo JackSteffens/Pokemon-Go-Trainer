@@ -142,15 +142,130 @@ md-menu-item>a>span {
   border-radius: 2px;
 }
 
-.pokemon-profile-card {
-  border-radius: 2px;
+.pokemon-profile-card:hover:before {
+    opacity: 0.50;
+    background-size: 115% 115%;
 }
 
-.pokemon-profile-card-footer {
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
+.pokemon-profile-card, .item-card-content {
+  border-radius: 3px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.pokemon-profile-card:hover:before {
+    opacity: 0.50;
+    background-size: 115% 115%;
+}
+
+.pokemon-profile-card:before {
+  border-radius: 3px;
+  content: " ";
+  position: absolute;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: background-size 2s ease, opacity 1.0s ease-out;
+  z-index: 0;
+}
+
+/* Flying type shares its background with normal */
+.pokemon-profile-card-normal:before,  .pokemon-profile-card-flying:before{
+  background-image: url('/res/images/backgrounds/BG_TYPE_NORMAL.png');
+}
+
+.pokemon-profile-card-psychic:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_PSYCHIC.png');
+}
+
+.pokemon-profile-card-bug:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_BUG.png');
+}
+
+.pokemon-profile-card-dragon:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_DRAGON.png');
+}
+
+.pokemon-profile-card-electric:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_ELECTRIC.png');
+}
+
+.pokemon-profile-card-fairy:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_FAIRY.png');
+}
+
+.pokemon-profile-card-fighting:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_FIGHTING.png');
+}
+
+.pokemon-profile-card-fire:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_FIRE.png');
+}
+
+.pokemon-profile-card-ghost:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_GHOST.png');
+}
+
+.pokemon-profile-card-grass:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_GRASS.png');
+}
+
+.pokemon-profile-card-ground:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_GROUND.png');
+}
+
+.pokemon-profile-card-ice:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_ICE.png');
+}
+
+.pokemon-profile-card-poison:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_POISON.png');
+}
+
+.pokemon-profile-card-rock:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_ROCK.png');
+}
+
+.pokemon-profile-card-water:before {
+  background-image: url('/res/images/backgrounds/BG_TYPE_WATER.png');
+}
+
+.pokemon-profile-card-footer, .item-profile-card-footer {
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
   background-color: rgba(150,150,150,0.15)!important;
   color: rgba(100,100,100,0.8)!important;
+  transition: background-color 1s ease, color 0.5s;
+}
+
+.pokemon-profile-card-footer:hover, .item-profile-card-footer:hover {
+  background-color: rgba(50,50,50,0.30)!important;
+  color: rgba(250,250,250,0.8)!important;
+}
+
+.item-card-content {
+  background-size:60%;
+  background-repeat: no-repeat;
+  background-position:center;
+  width:100%;
+  height:100%;
+  background-color: rgba(0, 0, 0, 0)!important;
+  transition: background-color 1.5s ease, background-size 1s;
+}
+
+.item-profile-card:hover .item-card-content {
+  background-color: rgba(100, 100, 100, 0.25)!important;
+  background-size:70%;
+}
+
+.profile-card-content:hover + .pokemon-profile-card-footer, .item-card-content:hover + .item-profile-card-footer {
+  background-color: rgba(50,50,50,0.30)!important;
+  color: rgba(250,250,250,0.8)!important;
 }
 
 .pokemon-profile-card-nickname {
@@ -159,6 +274,15 @@ md-menu-item>a>span {
   position: absolute;
   width: 100%;
   bottom:2em;
+}
+
+.item-profile-card-count {
+  color: rgba(100,100,100,0.9)!important;
+  text-align: right;
+  position: absolute;
+  width: 100%;
+  top:0;
+  right:10pt;
 }
 
 .pokemon-profile-card-favorite {
@@ -229,11 +353,6 @@ md-progress-linear.progress-yellow>div>div {
   margin-left:3em;
   height: 100%;
   width: 75%;
-}
-
-.trainer-profile-card>figure>md-grid-tile-footer {
-  border-bottom-left-radius: 2px;
-  border-bottom-right-radius: 2px;
 }
 
 .trainer-profile-card>figure>md-grid-tile-footer>figcaption,

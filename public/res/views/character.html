@@ -1,6 +1,6 @@
 <md-content md-theme="mysticBackground" class="md-header-tall md-primary" layout="row" layout-align="center center">
   <div class="md-toolbar-tools md-warn">
-    <span class="md-display-3 text-white">{{::username}}</span>
+    <span class="md-display-3 text-white">Overview {{::username}}</span>
   </div>
 </md-content>
 
@@ -8,20 +8,43 @@
   <md-tabs md-dynamic-height md-selected="tabIndex">
     <!-- inventory -->
     <md-tab label="Inventory" layout-padding>
-
       <md-content>
-        <table>
-          <thead>
-            <th>Stat</th>
-            <th>Count</th>
-          </thead>
-          <tbody>
-            <tr layout-padding ng-repeat="item in inventory.items | orderBy : '-count'">
-              <td>{{::item.item_id | ItemFilter : 'name'}}</td>
-              <td>{{::item.count}}</td>
-            </tr>
-          </tbody>
-        </table>
+        <md-toolbar>
+          <div class="md-toolbar-tools">
+            <md-menu style="margin:0;">
+              <md-button ng-click="$mdOpenMenu($event)">
+                {{itemQuery || 'Order by'}}
+              </md-button>
+               <md-menu-content>
+                 <md-menu-item ng-repeat="(key, val) in inventory.items[0]">
+                   <md-button ng-click="itemQuery = key" aria-label="Set order">
+                     {{key}}
+                   </md-button>
+                 </md-menu-item>
+               </md-menu-content>
+            </md-menu>
+
+            <md-button ng-click="query.ordertoggle = !query.ordertoggle">{{!query.ordertoggle ? 'ascending' : 'descending'}}</md-button>
+          </div>
+        </md-toolbar>
+
+        <md-content layout-padding>
+          <md-grid-list md-cols-xs="2" md-cols-sm="3" md-cols-md="5" md-cols-gt-md="7"
+          md-row-height-gt-md=".9:1" md-row-height=".9:1"
+          md-gutter="12px" md-gutter-gt-sm="8px">
+            <md-grid-tile ng-repeat="item in inventory.items | orderBy : 'count' : query.ordertoggle"
+                          class="item-profile-card clickable tile-smooth"
+                          md-ink-ripple>
+              <md-content style="background-image:url('/res/images/items/Item_{{item.item_id | zero : 4}}.png');"
+                          class="item-card-content">
+                <h1 class="item-profile-card-count">x{{item.count}}</h1>
+              </md-content>
+              <md-grid-tile-footer class="item-profile-card-footer">
+                <h3 class="md-subhead" style="text-align:center;" flex>{{::item.item_id | ItemFilter : 'name'}}</h3>
+              </md-grid-tile-footer>
+            </md-grid-tile>
+          </md-grid-list>
+        </md-content>
       </md-content>
     </md-tab>
 
@@ -79,7 +102,9 @@
           md-row-height-gt-md="0.75:1" md-row-height="0.75:1"
           md-gutter="12px" md-gutter-gt-sm="8px">
           <md-grid-tile ng-repeat="pokemon in pokemonTeam | filter : {name:query.name} | orderBy : query.order : query.ordertoggle"
-                        class="trainer-profile-card pokemon-profile-card clickable tile-smooth" md-ink-ripple ng-click="openPokemonDialog($event, pokemon)">
+                        class="trainer-profile-card pokemon-profile-card clickable tile-smooth ng-class:'pokemon-profile-card-'+(pokemon.type[0] | lowercase)"
+                        md-ink-ripple
+                        ng-click="openPokemonDialog($event, pokemon)">
 
             <md-content class="md-primary md-hue-2 grid-tile-container profile-card-content">
               <md-icon class="md-raised pokemon-profile-card-favorite">{{::pokemon.favorite ? 'star' : 'star_border'}}</md-icon>
@@ -94,22 +119,24 @@
             </md-content>
 
             <md-grid-tile-footer class="pokemon-profile-card-footer">
-            <md-progress-linear md-mode="determinate"
-            ng-class="{{[(health = 100*pokemon.stamina/pokemon.stamina_max) < 25 ? 'progress-red' : health < 50 ? 'progress-yellow' : 'progress-green']}}"
-            value="{{::health}}"></md-progress-linear>
-            <md-tooltip md-direction="top">
-              {{::pokemon.stamina}} / {{::pokemon.stamina_max}} HP
-            </md-tooltip>
-
-            <div layout="row" style="padding-top:.75em; padding-right: 16px;">
-              <h3 class="md-subhead">{{::pokemon.name}}</h3>
-              <span flex="auto"></span>
-              <h3 class="md-subhead">CP {{::pokemon.cp}}</h3>
-            </div>
-
-          </md-grid-tile-footer>
-        </md-grid-tile>
-      </md-grid-list>
+              <!-- Health bar -->
+              <md-progress-linear md-mode="determinate"
+              ng-class="{{[(health = 100*pokemon.stamina/pokemon.stamina_max) < 25 ? 'progress-red' : health < 50 ? 'progress-yellow' : 'progress-green']}}"
+              value="{{::health}}"></md-progress-linear>
+              <!-- Health stats -->
+              <md-tooltip md-direction="top">
+                {{::pokemon.stamina}} / {{::pokemon.stamina_max}} HP
+              </md-tooltip>
+              <!-- Name & CP -->
+              <div layout="row" style="padding-top:.75em; padding-right: 16px;">
+                <h3 class="md-subhead">{{::pokemon.name}}</h3>
+                <span flex="auto"></span>
+                <h3 class="md-subhead">CP {{::pokemon.cp}}</h3>
+              </div>
+            </md-grid-tile-footer>
+          </md-grid-tile>
+        </md-grid-list>
+        <br style="line-height: 1em;">
       </md-content>
     </md-tab>
 

@@ -100,7 +100,7 @@ angular.module('pogobot').filter('ItemFilter',
       {
         id: 501,
         label: "ITEM_TROY_DISK",
-        name: "Troy Disk",
+        name: "Lure Module",
         typeId : 8
       },
       {

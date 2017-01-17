@@ -160,8 +160,10 @@ angular.module('pogobot').controller('CharacterCtrl',
       }).then(function successCallback(response) {
         var team = $filter('filter')(response.data.pokemons, {is_egg:false},true);
         for (var i = 0; i < team.length; i++) {
-          team[i].name = $filter('PokemonFilter')(team[i].pokemon_id, 'name', true);
-          team[i].num = $filter('PokemonFilter')(team[i].pokemon_id, 'num', true);
+          var filteredPoke= $filter('PokemonFilter')(team[i].pokemon_id, true);
+          team[i].name = filteredPoke.name;
+          team[i].num = filteredPoke.num;
+          team[i].type = filteredPoke.type;
         }
         $scope.pokemonTeam = team;
         $scope.isLoading = false;
