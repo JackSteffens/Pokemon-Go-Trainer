@@ -3,6 +3,7 @@ exports.setRequestUrl = function(app) {
   var config = require(__dirname+'/config.js');
   var trainer = require("./controllers/trainer.controller.js");
   var map = require("./controllers/map.controller.js");
+  var task = require("./controllers/task.controller.js");
   var pokedex = require("./controllers/pokedex.controller.js");
 
   // # Routing #
@@ -15,7 +16,10 @@ exports.setRequestUrl = function(app) {
   app.get('/api/map/path', map.getPath);
   app.get('/api/map/scanner/ext', map.getScanDataExternal);
   app.get('/api/map/distance', map.getDistance);
-  app.post('/api/map/walk', map.traversePath);
+
+  // Task
+  app.post('/api/task/walk', task.traversePath);
+  app.post('/api/task/scan', task.scan);
 
   // Trainer
   app.get('/api/trainer', trainer.getTrainer);

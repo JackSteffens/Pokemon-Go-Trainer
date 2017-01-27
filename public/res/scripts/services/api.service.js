@@ -19,5 +19,7 @@ function() {
     convertS2   : this.baseUrl + "/map/convert",
     scanner     : this.baseUrl + "/map/scanner",
     scannerExt  : this.baseUrl + "/map/scanner/ext",
+    walk        : this.baseUrl + "/task/walk",
+    scan        : this.baseUrl + "/task/scan",
   }
 });

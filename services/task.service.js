@@ -6,6 +6,7 @@ var protobuf = require('protobufjs');       // Decoding responses using .proto
 var Long = require('long')                  // Long for date timestamps
 var colors = require('colors');             // Console collors
 var websocket = require('../utils/websocket.js'); // Websocket
+var ByteBuffer = require('bytebuffer');
 
 // Services
 var trainerService = require(path.resolve(__dirname+'/../services/trainer.service.js'));
@@ -149,11 +150,7 @@ function calculatePosition(currPos, destPos, speed, time) {
       Math.cos(Ad) - Math.sin(λ1) * Math.sin(φ3)
     )) / (Math.PI / 180);
     φ3 = φ3 / (Math.PI / 180); // φ3 is used in λ3, therefor this is done at the end.
-    // console.log('calculations : ')
-    // console.log('β : '+( β/ (Math.PI / 180))+' , d : '+d);
-    // console.log('φ3 : '+φ3+' , λ3 : '+λ3);
-    // console.log('desired location : ');
-    // console.log('φ2 : '+destPos.lat+' , λ2 : '+destPos.lng);
+
     return {
       lat: φ3,
       lng: λ3
@@ -163,7 +160,45 @@ function calculatePosition(currPos, destPos, speed, time) {
   }
 }
 
+
+/**
+* Scans the surrounding area for pokemons, gyms and poke stops
+* ***  ***  *** *** ***  FIXME *** *** *** *** ***
+* Currently doesn't work because of the Unknown6 protobuf message.
+* This is now a required field for API calls and requires an hashing algorithm
+* which has been discovered but is not made publicly available.
+* See: https://talk.pogodev.org/
+* @param String username , unique identifier
+* @param Function callback(error, data)
+* @return callback(Error error, Object data) , data includes array wild_pokemon[], array forts[], int number_of_forts
+*/
+function scan(username, callback) {
+  trainerService.getAvailableTrainers(username, function(error, trainer) {
+    if (error) console.log('[!] Trainer could not be fetched from the database'.red);
+    else if (trainer) {
+      var message = new CustomAPI.RequestMessage.PlayerUpdateMessage(
+        parseFloat(trainer.location.latitude),
+        parseFloat(trainer.location.longitude)
+      );
+      message = message.encode().toBuffer();
+      // FIXME While this request is valid but it always returns a message with empty values
+      var requestType = new CustomAPI.RequestNetwork.Request(1, message);
+      CustomAPI.api_req(trainer, requestType, function(error, data) {
+        if (error) {
+          console.log(('[!] Error scanning map data'+error).red);
+          return callback(error);
+        } else if (data) {
+          console.log('[i] Scan data : '.cyan)
+          console.log(data);
+        }
+        return callback(error, data);
+      }, CustomAPI.ResponseNetwork.PlayerUpdateResponse);
+    } else return callback('No trainer found');
+  });
+}
+
 module.exports = {
   traversePath : traversePath,
-  calculatePosition : calculatePosition
+  calculatePosition : calculatePosition,
+  scan : scan
 }

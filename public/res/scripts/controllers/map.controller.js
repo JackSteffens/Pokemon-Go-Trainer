@@ -2,6 +2,7 @@ angular.module('pogobot').controller('MapCtrl',
 function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, TrainerService, Socket) {
   // Variables
   var map;
+  var directions_edit;
   var EXTERNAL_SCANNER = false;
 
   // Scope variables
@@ -10,6 +11,7 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     x : 80,
     y : 60
   };
+  $scope.tracking = true;
   $scope.markerEnabled = {
     pokemon : true,
     pokestop : true,
@@ -28,14 +30,22 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
   $scope.pokemonDetails = {};
   $scope.path = {};
   $scope.pathLoading = false;
+  $scope.pathEditMode = false;
   $scope.polylineOptions = {
     current : {
-      strokeColor : "green",
-      onClick : polyLineClick()
+      strokeColor : "green"
     },
     suggested : {
-      strokeColor : "grey",
-      onClick : polyLineClick()
+      strokeColor : "grey"
+    },
+    edit : {
+      strokeColor: "red"
+    }
+  };
+  $scope.markerOptions = {
+    edit : {
+      draggable : false,
+      clickable : false
     }
   }
 
@@ -45,12 +55,11 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
   $scope.getDirections = getDirections;
   $scope.getNearbyData = getNearbyData;
   $scope.getDirectionsToPokemon = getDirectionsToPokemon;
-  $scope.polyLineClick = polyLineClick;
   $scope.setDirectionsToPokemon = setDirectionsToPokemon;
-
-  function polyLineClick(event) {
-    console.log(event);
-  }
+  $scope.togglePathEditMode = togglePathEditMode;
+  $scope.savePathEdit = savePathEdit;
+  $scope.startTraversing = startTraversing;
+  $scope.playerScan = playerScan;
 
   // Functions
   function init() {
@@ -61,7 +70,6 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     // Set websocket channels
     for (var i = 0; i < $scope.trainers.length; i++) {
       Socket.subscribe('location/'+$scope.trainers[i].username, function(trainerObj) {
-        console.log('Received location update from '+trainerObj.username);
         var trainer = $filter('filter')($scope.trainers, {username:trainerObj.username}, true)[0];
         var index = $scope.trainers.indexOf(trainer);
         $scope.trainers[index].location = trainerObj.location;
@@ -73,6 +81,42 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     $timeout(function() {
       initWatchers();
     },2000);
+  }
+
+  function togglePathEditMode() {
+    $scope.pathEditMode = !$scope.pathEditMode;
+    var trainer = $scope.currentTrainer
+    if (trainer && trainer.destination && trainer.destination.waypoints)
+      $scope.editWaypoints = $scope.currentTrainer.destination.waypoints
+  }
+
+  function savePathEdit() {
+    console.log($('#directions_edit'));
+    console.log($scope.currentTrainer.destination.waypoints);
+    console.log($scope.editWaypoints);
+  }
+
+  function playerScan() {
+    console.log('playerscan : '+$scope.currentTrainer.username)
+    if ($scope.currentTrainer) {
+      $http({
+        method:'POST',
+        url: Api.url.scan+'?username='+$scope.currentTrainer.username
+      }).then(function successCallback(response) {
+        console.log(response);
+      }, function errorCallback(response) {
+        console.log(response);
+      });
+    }
+  }
+
+  function startTraversing() {
+    if ($scope.currentTrainer.destination) {
+      $http({
+        method:'POST',
+        url: Api.url.walk + '?username=' + $scope.currentTrainer.username
+      });
+    }
   }
 
   function getDirectionsToPokemon(pokemon) {
@@ -119,7 +163,7 @@ function($scope, $filter, $rootScope, $mdSidenav, $timeout, $http, NgMap, Api, T
     }, function(trainer) {
       $scope.currentTrainer = trainer;
       if (trainer && trainer.location && trainer.location.latitude && trainer.location.longitude && this.map) {
-        this.map.setCenter({lat: trainer.location.latitude, lng: trainer.location.longitude});
+        if ($scope.tracking) this.map.setCenter({lat: trainer.location.latitude, lng: trainer.location.longitude});
         $scope.path = undefined;
       }
     }, true);

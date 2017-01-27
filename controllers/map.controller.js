@@ -19,30 +19,6 @@ function getScanDataExternal(req, res) {
 }
 
 /**
-* TODO Move this to a 'task controller'
-* Calls the loop cycle task for a Trainer object
-* @param String req.query.username , unique identifier for a Trainer
-* @param res return call.
-* @return Don't return anything or it will cancel the loop cycle thread!
-*/
-function traversePath(req, res) {
-  var username = req.query.username || null;
-  if (!username) {
-    res.status('400');
-    return res.send('No username supplied');
-  }
-  taskService.traversePath(username, function(error, message) {
-    if (error) {
-      console.log(error)
-      res.status('400');
-      return res.send(error);
-    } else if (message) {
-      console.log(message.cyan);
-    }
-  });
-}
-
-/**
 * GET : Request path from Google Maps API
 * Return : [DirectionsResult] object containing a path using coordinates
 */
@@ -77,7 +53,7 @@ function convertS2ToCoord(req, res) {
 }
 
 /**
-* 
+*
 *
 */
 function getDistance(req, res) {
@@ -98,6 +74,5 @@ module.exports = {
   getScanDataExternal : getScanDataExternal,
   getPath : getPath,
   convertS2ToCoord : convertS2ToCoord,
-  traversePath : traversePath,
   getDistance : getDistance
 }

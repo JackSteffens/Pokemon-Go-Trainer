@@ -76,21 +76,47 @@
                     preserve-viewport="true">
         </directions>
 
-        <directions ng-if="currentTrainer && currentTrainer.destination"
+        <directions ng-if="currentTrainer && currentTrainer.destination && !pathEditMode"
                     draggable="false"
                     travel-mode="BICYCLING"
                     waypoints="{{currentTrainer.destination ? currentTrainer.destination.waypoints : []}}"
                     origin="{{currentTrainer.destination ? currentTrainer.destination.origin : ''}}"
                     destination="{{currentTrainer.destination ? currentTrainer.destination.destination : ''}}"
                     suppress-bicycling-layer="true"
-                    polyline-options="{{polylineOptions.current}}"
+                    polyline-options="{{pathEditMode ? polylineOptions.edit : polylineOptions.current}}"
+                    preserve-viewport="true">
+        </directions>
+
+        <directions ng-if="currentTrainer && currentTrainer.destination && pathEditMode"
+                    id="directions_edit"
+                    draggable="true"
+                    travel-mode="BICYCLING"
+                    marker-options-draggable="false"
+                    optimize-waypoints="true"
+                    waypoints="{{editWaypoints ? editWaypoints : []}}"
+                    origin="{{currentTrainer.destination ? currentTrainer.destination.origin : ''}}"
+                    destination="{{currentTrainer.destination ? currentTrainer.destination.destination : ''}}"
+                    suppress-bicycling-layer="true"
+                    polyline-options="{{polylineOptions.edit}}"
                     preserve-viewport="true">
         </directions>
       </ng-map>
 
-      <md-content class="map-options-container" style="padding-right:1em;" layout="row" layout-align="center center" ng-if="true">
-        <div layout="row" layout-align="center center">
+      <md-content class="map-options-container" style="padding-right:1em; pointer-events: none; height: auto;" layout="column" layout-align="center center" ng-if="true">
+        <div ng-if="currentTrainer && currentTrainer.destination" style="pointer-events: auto;">
+          <!-- Start path button -->
+          <md-button class="md-raised md-primary" ng-click="pathEditMode ? savePathEdit() : startTraversing()">
+            <md-icon class="material-icons">add</md-icon>
+            {{pathEditMode ? 'Save' : 'Travel'}}
+          </md-button>
+          <!-- Edit path button -->
+          <md-button ng-if="false" ng-click="togglePathEditMode()" class="md-raised" ng-class="{'md-warn' : pathEditMode}">
+            {{pathEditMode ? 'Clear' : 'Edit'}}
+          </md-button>
+        </div>
+        <div layout="row" layout-align="center center" style="bottom:0; pointer-events: auto;">
           <md-button class="md-icon-button md-raised" ng-click="getNearbyPokemon()">
+            <md-tooltip md-direction="top">Refresh</md-tooltip>
             <md-icon class="material-icons">
               refresh
             </md-icon>
@@ -99,6 +125,7 @@
           <!-- Marker filter -->
           <md-menu md-offset="-10 0">
               <md-button class="md-icon-button md-raised" ng-click="$mdOpenMenu($event)">
+                <md-tooltip md-direction="top">Filter</md-tooltip>
                 <md-icon md-menu-origin class="material-icons">
                   sort
                 </md-icon>
@@ -122,6 +149,14 @@
                 </md-menu-item>
               </md-menu-content>
             </md-menu>
+
+            <!-- Track position -->
+            <md-button class="md-icon-button md-raised" ng-click="playerScan()">
+              <md-tooltip md-direction="top">Scan</md-tooltip>
+              <md-icon class="material-icons">
+                gps_fixed
+              </md-icon>
+            </md-button>
           </div>
       </md-content>
 </md-content>
