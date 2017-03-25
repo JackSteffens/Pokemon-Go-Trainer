@@ -20,6 +20,9 @@
                     md-ink-ripple
                     ui-sref="character({username: trainer.username})">
           <div class="trainer-profile-card-image" layout="column" layout-align="start end">
+            <!-- 3D Model -->
+            <three-wrapper elem-id={{$index}} avatar="{{trainer.avatar}}"></three-wrapper>
+
             <!-- Login button -->
             <md-button ng-if="!trainer.login.accessToken" md-theme="mystic" class="md-icon-button md-raised" ng-click="loginPopup($event, trainer); $event.stopPropagation()" style="top:1em; float:right; right:-.5em;">
               <md-icon class="material-icons">
@@ -64,14 +67,15 @@
                     class="grid-tile-container md-hue-2"
                     layout="column"
                     layout-align="center center">
-        <md-button md-theme="mystic" class="md-icon-button md-raised">
-          <md-icon class="material-icons">
-            add
-          </md-icon>
-          <md-tooltip>
-            Add a trainer
-          </md-tooltip>
-        </md-button>
+          <three-wrapper elem-id="999"></three-wrapper>
+          <md-button md-theme="mystic" class="md-icon-button md-raised">
+            <md-icon class="material-icons">
+              add
+            </md-icon>
+            <md-tooltip>
+              Add a trainer
+            </md-tooltip>
+          </md-button>
         </md-content>
 
         <md-grid-tile-footer>
@@ -82,10 +86,7 @@
           <h3 class="md-subhead" flex="100" style="text-align: center; margin:0; margin-top:.5em;">Add new</h3>
         </md-grid-tile-footer>
       </md-grid-tile>
-
     </md-grid-list>
-    <md-button ng-click="getAvailableTrainers()">
-      trainers
-    </md-button>
+
   </md-content>
 </md-content>

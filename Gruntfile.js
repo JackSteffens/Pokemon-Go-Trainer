@@ -15,7 +15,9 @@ module.exports = function (grunt) {
           'node_modules/nvd3/build/nv.d3.min.js',
           'node_modules/angular-nvd3/dist/angular-nvd3.min.js',
           'node_modules/ngmap/build/scripts/ng-map.min.js',
-          'node_modules/socket.io-client/dist/socket.io.min.js'
+          'node_modules/socket.io-client/dist/socket.io.min.js',
+          'node_modules/three/build/three.min.js',
+          'node_modules/three/examples/js/loaders/OBJLoader.js'
         ],
         dest: 'public/res/scripts/gruntscripts.js'
       },

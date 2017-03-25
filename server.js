@@ -32,7 +32,7 @@ server.listen(3000, 'localhost', function() {
   clearTokens.init();
   console.log(
     "---------------------------------------------------------\n\n" +
-    "                        Pokémon Go                         \n" +
+    "                       Pokémon Go                          \n" +
     "                   Advanced Interface                      \n" +
     "_________________________________________________________  \n"
   );

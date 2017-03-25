@@ -78,8 +78,12 @@ module.config(function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
         loadMyFiles: function($ocLazyLoad) {
           return $ocLazyLoad.load({
             files: [
+              // Controllers
               './res/scripts/controllers/accounts.controller.js',
-              './res/scripts/controllers/login.controller.js'
+              './res/scripts/controllers/login.controller.js',
+              './res/scripts/controllers/threewrapper.controller.js',
+              // Directives
+              './res/scripts/directives/threewrapper.directive.js'
             ]
           });
         }

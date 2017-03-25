@@ -4,7 +4,6 @@
   "description": "Pokemon Go bot written in NodeJS",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
   "author": "Hypnoised",
@@ -37,6 +36,6 @@
     "request": "^2.73.0",
     "s2-geometry": "^1.2.9",
     "socket.io": "^1.7.2",
-    "websocket": "^1.0.23"
+    "three": "^0.84.0",
   }
 }
