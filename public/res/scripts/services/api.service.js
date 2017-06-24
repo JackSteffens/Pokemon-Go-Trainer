@@ -1,7 +1,8 @@
 angular.module('pogobot').service('Api',
 function() {
-  this.baseUrl = window.location.href.substr(0,
-      window.location.href.length - window.location.hash.length - 1) + "/api";
+  this.domain = window.location.href.substr(0,
+      window.location.href.length - window.location.hash.length - 1);
+  this.baseUrl = this.domain + "/api";
 
   this.url = {
     trainer     : this.baseUrl + "/trainer",
@@ -20,6 +21,6 @@ function() {
     scanner     : this.baseUrl + "/map/scanner",
     scannerExt  : this.baseUrl + "/map/scanner/ext",
     walk        : this.baseUrl + "/task/walk",
-    scan        : this.baseUrl + "/task/scan",
+    scan        : this.baseUrl + "/task/scan"
   }
 });

@@ -1,9 +1,10 @@
 angular.module('pogobot').service('Socket',
   function($http, Api) {
     this.socket;
+    var domain = Api.domain;
 
     this.init = function() {
-      this.socket = io.connect('http://localhost:3000');
+      this.socket = io.connect(domain);
 
         // socket.join('connected');
         this.socket.on('test', function (data) {
