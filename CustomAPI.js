@@ -8,7 +8,7 @@ var colors = require('colors');
 // Protocol Buffer
 var builder = protobuf.loadProtoFile('POGOProtos.proto');
 if (builder === null) {
-  var builder = protobuf.loadProtoFile(__dirname+'/models/proto/POGOProtos.proto');
+  var builder = protobuf.loadProtoFile(__dirname+'/node_modules/node-pogo-protos/proto/POGOProtos.proto');
   if (builder === null)
     console.log('[!] No .proto file found!');
 }
